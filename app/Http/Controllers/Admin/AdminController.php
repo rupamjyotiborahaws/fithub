@@ -1,0 +1,999 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\Membership;
+use App\Models\User;
+use App\Models\MemberDetail;
+use App\Models\MemberHealthTrack;
+use App\Models\Client;
+use App\Models\FeePayment;
+use App\Models\FeePaymentSchedule;
+use App\Models\Config;
+use App\Models\Attendance;
+use App\Models\Trainer;
+use App\Models\MemberTrainer;
+use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+
+class AdminController extends Controller
+{
+    public function dashboard(Request $request)
+    {
+        $client_settings = $request->client_settings;
+        $allMembers = User::where(['isAdmin' => 0])->select('id','name', 'phone_no')->get();
+        return view('admin.dashboard', compact('client_settings', 'allMembers'));
+    }
+    public function memberRegistration(Request $request)
+    {
+        $client_settings = $request->client_settings;
+        $memberships = Membership::all();
+        $allMembers = User::where(['isAdmin' => 0])->select('id','name')->get();
+        $recentMembers = User::where(['isAdmin' => 0])
+                          ->join('memberdetails', 'users.id', '=', 'memberdetails.user_id')
+                          ->select('users.name', 'memberdetails.membership_start_date')
+                          ->orderBy('users.created_at', 'desc')
+                          ->take(10)
+                          ->get();
+        return view('admin.member_reg', compact('memberships', 'recentMembers', 'client_settings', 'allMembers'));
+    }
+
+    public function trainerRegistration(Request $request)
+    {
+        $client_settings = $request->client_settings;
+        return view('admin.trainer_reg', compact('client_settings'));
+    }
+
+    public function registerTrainer(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'address' => 'required|string|max:500',
+            'phone' => 'required|string|max:10',
+            'dob' => 'required|date',
+            'gender' => 'required|string|in:m,f,o',
+            'height' => 'nullable|numeric',
+            'weight' => 'nullable|numeric',
+            'specialization' => 'nullable|string|max:500',
+            'certificate_no' => 'nullable|string|max:255'
+        ]);
+
+        // If validation passes, create the trainer
+        $trainer = Trainer::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'address' => $request->address,
+            'phone' => $request->phone,
+            'dob' => $request->dob,
+            'gender' => $request->gender,
+            'height' => $request->height,
+            'weight' => $request->weight,
+            'specialization' => $request->specialization,
+            'certificate_no' => $request->certificate_no,
+        ]);
+        return response()->json(['message' => 'Trainer registered successfully', 'status' => 'success'], 200);
+    }
+
+    public function memberAllotTrainer(Request $request)
+    {
+        $client_settings = $request->client_settings;
+        $allMembers = User::where(['isAdmin' => 0])->select('id','name', 'phone_no')->get();
+        $allTrainers = Trainer::all();
+        return view('admin.allot_trainer', compact('client_settings', 'allMembers', 'allTrainers'));
+    }
+
+    public function allotTrainer(Request $request) {
+        $member = User::find($request->member_id);
+        if(!$member) {
+            return response()->json(['message' => 'Member not found', 'status' => 'error'], 404);
+        }
+
+        $trainers = Trainer::whereIn('id', (array)$request->trainer_ids)->get();
+        if($trainers->isEmpty()) {
+            return response()->json(['message' => 'Trainers not found', 'status' => 'error'], 404);
+        }
+        
+        $existing = MemberTrainer::where('member_id', $member->id)->get();
+        foreach ($existing as $key => $value) {
+            if(!in_array($value->trainer_id, (array)$request->trainer_ids)) {
+                // Remove the trainer allotment if not in the new list
+                MemberTrainer::where('member_id', $member->id)->where('trainer_id', $value->trainer_id)->delete();
+            }
+        }
+
+        // Allot the trainers to the member
+        foreach ((array)$request->trainer_ids as $trainer_id) {
+            MemberTrainer::firstOrCreate([
+                'member_id' => $member->id,
+                'trainer_id' => $trainer_id,
+                'allotment_date' => Carbon::now()->toDateString()
+            ]);
+        }
+        return response()->json(['message' => 'Trainers allotted successfully', 'status' => 'success'], 200);
+    }
+
+    public function getTrainers(Request $request) {
+        $memberId = $request->member_id;
+        $member_trainers = MemberTrainer::where('member_id', $memberId)->pluck('trainer_id')->toArray();
+        return response()->json(['message' => 'Trainers fetched successfully', 'data' => $member_trainers, 'status' => 'success'], 200);
+    }
+
+    public function trainerAllotments(Request $request) {
+        // Get the number of members allotted to each trainer
+        $trainerAllotments = MemberTrainer::rightJoin('trainers', 'member_trainer.trainer_id', '=', 'trainers.id')
+                            ->select('trainers.id as trainer_id', 'trainers.name as trainer_name', \DB::raw('COUNT(member_trainer.member_id) as member_count'))
+                            ->groupBy('trainers.id', 'trainers.name')
+                            ->get();
+        
+        // Store the result in an array format
+        $trainers = $allotments = [];
+        $i=0;
+        foreach ($trainerAllotments as $allotment) {
+            $trainers[] = $allotment->trainer_name;
+            $allotments[] = $allotment->member_count;
+        }
+        $data = [
+            'trainers' => $trainers,
+            'allotments' => $allotments
+        ];
+        return response()->json($data);
+    }
+
+    public function registrations() {
+        $today = Carbon::now();
+        $currentMonth = $today->format('M'); // Get short month name like "Oct"
+        $lastMonth = $today->subMonth()->format('M'); // Get short month name for last month
+        $last2ndmonth = $today->subMonth()->format('M'); // Get short month name for 2nd last month
+        $currentMonthRegistrationCount = User::where('isAdmin', 0)
+                                        ->whereMonth('created_at', Carbon::now()->month)
+                                        ->whereYear('created_at', Carbon::now()->year)
+                                        ->count();
+        $lastMonthRegistrationCount = User::where('isAdmin', 0)
+                                        ->whereMonth('created_at', Carbon::now()->subMonth()->month)
+                                        ->whereYear('created_at', Carbon::now()->subMonth()->year)
+                                        ->count();
+        $last2ndmonthRegistrationCount = User::where('isAdmin', 0)
+                                        ->whereMonth('created_at', Carbon::now()->subMonths(2)->month)
+                                        ->whereYear('created_at', Carbon::now()->subMonths(2)->year)
+                                        ->count();
+
+        $data = [
+            'months' => [$last2ndmonth, $lastMonth, $currentMonth],
+            'registrations' => [$last2ndmonthRegistrationCount, $lastMonthRegistrationCount, $currentMonthRegistrationCount]
+        ];
+        
+        return response()->json($data);
+    }
+
+    public function recentRegistrations(Request $request) {
+        $selectedMonths = $request->input('months', 3); // Default to last 3 months if not provided
+        $registrations = [];
+        $months = [];
+        for ($i = $selectedMonths - 1; $i >= 0; $i--) {
+            $monthDate = Carbon::now()->subMonths($i);
+            $monthName = $monthDate->format('M');
+            $yearName = $monthDate->format('y');
+            $year = $monthDate->year;
+            $monthCount = User::where('isAdmin', 0)
+                            ->whereMonth('created_at', $monthDate->month)
+                            ->whereYear('created_at', $year)
+                            ->count();
+            $months[] = $monthName." ".$yearName;
+            $registrations[] = $monthCount;
+        }
+        $data = [
+            'months' => $months,
+            'registrations' => $registrations
+        ];
+        return response()->json(['status' => 'success', 'data' => $data]);
+    }
+
+    public function currentMonthFeeCollection() {
+        $currentMonth = Carbon::now()->format('M'); // Get short month name like "Oct"
+        $currentYear = Carbon::now()->year;
+        $currentMonthYear = $currentMonth . " " . $currentYear; // e.g., "Oct 2023"
+        $totalFees = FeePaymentSchedule::where('for_month', $currentMonthYear)->count('id');
+        $paidFees = FeePaymentSchedule::where('for_month', $currentMonthYear)->where('is_paid', 1)->count('id');
+        $unpaidFees = FeePaymentSchedule::where('for_month', $currentMonthYear)->where('is_paid', 0)->count('id');
+        if($totalFees == 0) {
+            $totalFees = 1; // To avoid division by zero
+        }
+        $paidPercentage = ($paidFees / $totalFees) * 100;
+        $unpaidPercentage = ($unpaidFees / $totalFees) * 100;
+        $data = [
+            'months' => ['Paid', 'Unpaid'],
+            'fee_collections' => [$paidPercentage, $unpaidPercentage]
+        ];
+        return response()->json($data);
+    }
+
+    public function recentFeeCollections(Request $request) {
+        $selectedMonth = $request->input('month');
+        $totalFees = FeePaymentSchedule::where('for_month', $selectedMonth)->count('id');
+        $paidFees = FeePaymentSchedule::where('for_month', $selectedMonth)->where('is_paid', 1)->count('id');
+        $unpaidFees = FeePaymentSchedule::where('for_month', $selectedMonth)->where('is_paid', 0)->count('id');
+        if($totalFees == 0) {
+            $totalFees = 1; // To avoid division by zero
+        }
+        $paidPercentage = ($paidFees / $totalFees) * 100;
+        $unpaidPercentage = ($unpaidFees / $totalFees) * 100;
+        $data = [
+            'months' => ['Paid', 'Unpaid'],
+            'fee_collections' => [$paidPercentage, $unpaidPercentage]
+        ];
+        return response()->json($data);
+    }
+
+    public function registerMember(Request $request) {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'address' => 'required|string|max:500',
+            'phone' => 'required|string|max:10',
+            'dob' => 'required|date',
+            'gender' => 'required|string|in:m,f,o',
+            // 'height' => 'nullable|numeric',
+            // 'weight' => 'nullable|numeric',
+            'membership_type' => 'required|exists:memberships,id',
+            'membership_start_date' => 'required|date',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:10'
+        ]);
+        // Logic to create user and member profile goes here
+        $user = new User();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->password = bcrypt('password'); // Set a default password or send email
+        $user->address = $request->address;
+        $user->phone_no = $request->phone;
+        $user->save();
+        if($user->id){
+            // Get the membership to calculate end date
+            $membership = Membership::find($request->membership_type);
+            $startDate = Carbon::parse($request->membership_start_date);
+            $membership_end_date = $startDate->addMonths($membership->duration_months);
+
+            // Calculate age based on DOB
+            $dob = Carbon::parse($request->dob);
+            $age = $dob->diffInYears(Carbon::now());
+
+            $memberDetail = new MemberDetail();
+            $memberDetail->user_id = $user->id;
+            $memberDetail->dob = $request->dob;
+            $memberDetail->age = $age;
+            $memberDetail->gender = $request->gender;
+            $memberDetail->membership_type = $request->membership_type;
+            $memberDetail->membership_start_date = $request->membership_start_date;
+            $memberDetail->membership_end_date = $membership_end_date;
+            $memberDetail->emergency_contact_name = $request->emergency_contact_name;
+            $memberDetail->emergency_contact_phone = $request->emergency_contact_phone;
+            $memberDetail->save();
+
+            $membership_info = Membership::where(['id' => $request->membership_type])->first();
+            $total_months = $membership_info->duration_months;
+            $payment_type = $membership_info->payment_type;
+            $admission_fee = $membership_info->admission_fee;
+            $monthly_fee = $membership_info->monthly_fee;
+            $one_time_fee = $membership_info->one_time_fee;
+            $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            // Insert first record in payment schedule table
+            $current_month = Carbon::parse($request->membership_start_date);
+            $current_fee_day = $current_month->day;
+            $current_fee_month = $current_month->month;
+            $current_fee_year = $current_month->year;
+            $current_month = Carbon::create($current_fee_year, $current_fee_month, $current_fee_day)->toDateString();
+            $feeSchedule = new FeePaymentSchedule();
+            $feeSchedule->member_id = $user->id;
+            $feeSchedule->membership_type = $membership_info->id;
+            $feeSchedule->for_month = $months[$current_fee_month - 1]." ".$current_fee_year;
+            $feeSchedule->due_date = $current_month;
+            $feeSchedule->amount = $monthly_fee;
+            $feeSchedule->is_paid = $payment_type == 'single' ? true : false;
+            $feeSchedule->save();
+
+            if($total_months > 0) {
+                for($month = 1; $month <= $total_months - 1; $month++) {
+                    $next_month = Carbon::parse($request->membership_start_date)->addMonths($month);
+                    $next_fee_day = $next_month->day;
+                    $next_fee_month = $next_month->month;
+                    $next_fee_year = $next_month->year;
+                    $next_month = Carbon::create($next_fee_year, $next_fee_month, $next_fee_day)->toDateString();
+                    $feeSchedule = new FeePaymentSchedule();
+                    $feeSchedule->member_id = $user->id;
+                    $feeSchedule->membership_type = $membership_info->id;
+                    $feeSchedule->for_month = $months[$next_fee_month - 1]." ".$next_fee_year;
+                    $feeSchedule->due_date = $next_month;
+                    $feeSchedule->amount = $monthly_fee;
+                    $feeSchedule->is_paid = $payment_type == 'single' ? true : false;
+                    $feeSchedule->save();
+                }
+            }
+
+            if($payment_type == 'single') {
+                // If one time payment, mark all as paid
+                $fee_schedule = FeePaymentSchedule::where(['member_id' => $user->id, 'membership_type' => $membership_info->id])->get();
+                $payment_ids = [];
+                foreach ($fee_schedule as $key => $fee) {
+                    $payment_ids[] = $fee->id;
+                }
+                // Create FeePayment record
+                $feePayment = new FeePayment();
+                $feePayment->member_id = $user->id;
+                $feePayment->fee_type = 'one_time';
+                $feePayment->pay_for_month = implode(',', $payment_ids);
+                $feePayment->amount = $membership_info->one_time_fee;
+                $feePayment->payment_date = date('Y-m-d');
+                $feePayment->payment_method = $request->payment_method ?? 'cash';
+                $feePayment->transaction_id = $request->transaction_id ?? '';
+                $feePayment->notes = '';
+                $feePayment->save();
+
+                // Update the payment schedule records as paid
+                foreach ($fee_schedule as $key => $fee) {
+                    $fee->is_paid = true;
+                    $fee->fee_payment_id = $feePayment->id;
+                    $fee->save();
+                }
+            }        
+            return response()->json(['message' => 'Member registered successfully.'], 200);
+        }
+        return response()->json(['message' => 'Member additional info could not be saved. Got to member update page to update.'], 500);
+    }
+
+    public function getClient(Request $request)
+    {
+        $client_settings = $request->client_settings;
+        $client=Client::where(['id'=>1])->get();
+        if(count($client) > 0){
+            $client=$client[0];
+        }
+        return view('admin.client', compact('client', 'client_settings'));
+    }
+
+    public function addUpdateClient(Request $request) {
+        $inputs=$request->all();
+        $client=Client::where(['id'=>1])->get();
+        if(count($client) > 0){
+            $data = [];
+            $data['name'] = $inputs['name'];
+            $data['email'] = $inputs['email'];
+            $data['address'] = $inputs['address'];
+            $data['phone_no'] = $inputs['phone_no'];
+            $data['date_of_icorporation'] = $inputs['date_of_icorporation'];
+            $data['contact_person'] = $inputs['contact_person'];
+            $data['gst_id'] = $inputs['gst_id'];
+            $data['business_type'] = $inputs['business_type'];
+            Client::where(['id'=>1])->update($data);
+            return response()->json(['message' => 'Client updated successfully.', 'data' => $client[0], 'status' => 'updated'], 200);
+        } else {
+            $client = new Client();
+            $client->name = $inputs['name'];
+            $client->email = $inputs['email'];
+            $client->address = $inputs['address'];
+            $client->phone_no = $inputs['phone_no'];
+            $client->date_of_icorporation = $inputs['date_of_icorporation'];
+            $client->contact_person = $inputs['contact_person'];
+            $client->gst_id = $inputs['gst_id'];
+            $client->business_type = $inputs['business_type'];
+            $client->save();
+            return response()->json(['message' => 'Client added successfully.', 'data' => $client, 'status' => 'added'], 200);
+        }
+    }
+
+    public function getMemberships(Request $request) {
+        $client_settings = $request->client_settings;
+        $memberships = Membership::all();
+        return view('admin.membership', compact('memberships', 'client_settings'));
+    }
+
+    public function addMembership(Request $request) {
+        $membership = new Membership();
+        $membership->type = $request->type;
+        $membership->duration_months = $request->duration_months;
+        $membership->payment_type = $request->payment_type;
+        $membership->admission_fee = $request->payment_type == 'recurring' ? $request->adm_fee : 0;
+        $membership->monthly_fee = $request->payment_type == 'recurring' ? $request->monthly_fee : 0;
+        $membership->one_time_fee = $request->payment_type == 'single' ? $request->one_time_fee : 0;
+        $membership->benefits = $request->benefits;
+        $membership->description = $request->description;
+        $membership->is_active = $request->is_active ? true : false;
+        $membership->is_transferable = $request->is_transferable ? true : false;
+        $membership->save();
+
+        return response()->json(['message' => 'Membership plan added successfully.', 'data' => $membership], 200);
+    }
+
+    public function editMemberships(Request $request) {
+        $membership = Membership::find($request->membership_id);
+        $membership->type = $request->type;
+        $membership->duration_months = $request->duration_months;
+        $membership->payment_type = $request->edit_payment_type;
+        $membership->admission_fee = $request->edit_payment_type == 'recurring' ? $request->edit_adm_fee : 0;
+        $membership->monthly_fee = $request->edit_payment_type == 'recurring' ? $request->edit_monthly_fee : 0;
+        $membership->one_time_fee = $request->edit_payment_type == 'single' ? $request->edit_one_time_fee : 0;
+        $membership->benefits = $request->benefits;
+        $membership->description = $request->description;
+        $membership->is_active = $request->is_active ? true : false;
+        $membership->is_transferable = $request->is_transferable ? true : false;
+        $membership->save();
+
+        return response()->json(['message' => 'Membership plan updated successfully.', 'data' => $membership], 200);
+    }
+
+    public function memberShow($id, Request $request) {
+        $client_settings = $request->client_settings;
+        $member = User::where(['id' => $id, 'isAdmin' => 0])->first();
+        if(!$member) {
+            return redirect()->route('member.registration')->with('error', 'Member not found.');
+        }
+        $memberDetail = MemberDetail::where(['user_id' => $id])
+                        ->join('memberships', 'memberdetails.membership_type', '=', 'memberships.id')
+                        ->select('memberdetails.*', 'memberships.type as membership_type_name', 'memberships.duration_months', 'memberships.payment_type', 
+                                 'memberships.admission_fee', 'memberships.monthly_fee', 'memberships.one_time_fee', 'memberships.benefits', 'memberships.description')
+                        ->first();
+        $healthTracks = MemberHealthTrack::where(['user_id' => $id])->orderBy('measure_date', 'desc')->get();
+        $feeSchedules = FeePaymentSchedule::where(['member_id' => $id])->get();
+        $trainers = MemberTrainer::where(['member_id' => $id])
+                    ->join('trainers', 'trainers.id', '=', 'member_trainer.trainer_id')
+                    ->select('trainers.id', 'trainers.name')
+                    ->get();
+        return view('admin.member_show', compact('member', 'memberDetail', 'healthTracks', 'client_settings', 'feeSchedules', 'trainers'));
+    }
+
+    public function memberProgressTracker(Request $request) {
+        $client_settings = $request->client_settings;
+        $allMembers = User::where(['isAdmin' => 0])->select('id','name', 'phone_no')->get();
+        return view('admin.member_progress_tracker', compact('client_settings', 'allMembers'));
+    }
+
+    public function fetchMemberProgress($member_id, $metric) {
+        $member = User::where(['id' => $member_id, 'isAdmin' => 0])->first();
+        if(!$member) {
+            return response()->json(['message' => 'Member not found', 'status' => 'error'], 404);
+        }
+        $matric_values = [];
+        $measure_dates = [];
+        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        $healthTracks = MemberHealthTrack::where(['user_id' => $member_id])->orderBy('measure_date', 'asc')->get();
+        foreach ($healthTracks as $track) {
+            $month = date('m', strtotime($track->measure_date));
+            $year = date('y', strtotime($track->measure_date));
+            $measure_dates[] = $months[$month - 1].' '.$year.' ('.date('d-m-y', strtotime($track->measure_date)).')';
+            if($metric == 'Weight') {
+                $matric_values[] = $track->weight;
+            } else if($metric == 'Height') {
+                $matric_values[] = $track->height;
+            } else if($metric == 'BMI') {
+                $matric_values[] = $track->bmi;
+            } else if($metric == 'Body Fat Percentage') {
+                $matric_values[] = $track->body_fat_percentage;
+            } else if($metric == 'Muscle Mass') {
+                $matric_values[] = $track->muscle_mass;
+            } else if($metric == 'Waist Circumference') {
+                $matric_values[] = $track->waist_circumference;
+            } else if($metric == 'Hip Circumference') {
+                $matric_values[] = $track->hip_circumference;
+            } else if($metric == 'Chest Circumference') {
+                $matric_values[] = $track->chest_circumference;
+            } else if($metric == 'Thigh Circumference') {
+                $matric_values[] = $track->thigh_circumference;
+            } else if($metric == 'Arm Circumference') {
+                $matric_values[] = $track->arm_circumference;
+            }
+        }
+        return response()->json([
+            'message' => 'Member progress data fetched successfully',
+            'data' => [
+                'measure_dates' => $measure_dates,
+                'measurement_values' => $matric_values,
+            ],
+            'status' => 'success'
+        ], 200);
+    }
+
+    public function addHealthRecord(Request $request) {
+        $inputs = $request->all();
+        $new_health_record = new MemberHealthTrack();
+        $new_health_record->user_id = $inputs['membership_id'];
+        $new_health_record->measure_date = date('Y-m-d');
+        $new_health_record->weight = $inputs['weight'];
+        $new_health_record->height = $inputs['height'];
+        $new_health_record->bmi = $inputs['bmi'];
+        $new_health_record->body_fat_percentage = $inputs['body_fat'];
+        $new_health_record->muscle_mass = $inputs['muscle_mass'];
+        $new_health_record->waist_circumference = $inputs['west_cir'];
+        $new_health_record->hip_circumference = $inputs['hip_cir'];
+        $new_health_record->chest_circumference = $inputs['chest_cir'];
+        $new_health_record->thigh_circumference = $inputs['thigh_cir'];
+        $new_health_record->arm_circumference = $inputs['arm_cir'];
+        $new_health_record->notes = $inputs['note'];
+        $new_health_record->save();
+        return response()->json(['message' => 'Health record added'], 200);
+    }
+
+    public function feeCollection(Request $request) {
+        $client_settings = $request->client_settings;
+        $allMembers = User::where(['isAdmin' => 0])->select('id','name', 'phone_no')->get();
+        $memberships = Membership::all();
+        $members_fee = User::where(['isAdmin' => 0])
+                      ->join('fee_payment_schedule', 'users.id', '=', 'fee_payment_schedule.member_id')
+                      ->join(\DB::raw('(SELECT member_id, MIN(due_date) as min_due_date FROM fee_payment_schedule WHERE is_paid = 0 GROUP BY member_id) as oldest_fees'), function($join) {
+                          $join->on('fee_payment_schedule.member_id', '=', 'oldest_fees.member_id')
+                               ->on('fee_payment_schedule.due_date', '=', 'oldest_fees.min_due_date');
+                      })
+                      ->where('fee_payment_schedule.is_paid', '=', 0)
+                      ->select('users.id','users.name', 'users.phone_no', 'fee_payment_schedule.id as fee_schedule_id', 
+                               'fee_payment_schedule.for_month', 'fee_payment_schedule.due_date', 'fee_payment_schedule.amount', 'fee_payment_schedule.is_paid')
+                      ->get();
+        return view('admin.fee_collection', compact('client_settings', 'allMembers', 'memberships', 'members_fee'));    
+    }
+
+    public function getPaymentSchedule($member_id) {
+        $memberDet = MemberDetail::where(['user_id' => $member_id])->first();
+        $membership_id = $memberDet->membership_type;
+        $membership = Membership::where(['id' => $membership_id])->first();
+        $feeSchedules = FeePaymentSchedule::where(['member_id' => $member_id])->get();
+        $membername = User::where(['id' => $member_id])->first()->name;
+        return response()->json([
+            'message' => 'Pending fee details fetched successfully',
+            'data' => [
+                'membership' => $membership,
+                'payment_schedule' => $feeSchedules,
+                'membername' => $membername
+            ],
+            'status' => 'success'
+        ], 200);
+    }
+
+    public function getConfig(Request $request) {
+        $client_settings = $request->client_settings;
+        $config = Config::all();
+        if(count($config) > 0) {
+            $config = $config[0];
+        } else {
+            $config = null;
+        }
+        return view('admin.config', compact('client_settings', 'config'));
+    }
+
+    public function saveConfig(Request $request) {
+        $inputs = $request->all();
+        $request->validate([
+            'registration_fee' => 'required|numeric|min:0',
+            'monthly_fee' => 'required|numeric|min:0'
+        ]);
+        $config = Config::first();
+        if($config) {
+            $config->registration_fee = $inputs['registration_fee'];
+            $config->monthly_fee = $inputs['monthly_fee'];
+            $config->save();
+            return response()->json(['message' => 'Config updated successfully.', 'data' => $config, 'status' => 'updated'], 200);
+        } else {
+            $config = new Config();
+            $config->registration_fee = $inputs['registration_fee'];
+            $config->monthly_fee = $inputs['monthly_fee'];
+            $config->save();
+            return response()->json(['message' => 'Config added successfully.', 'data' => $config, 'status' => 'added'], 200);
+        }
+    }
+
+    public function processFeePayment(Request $request) {
+        $inputs = $request->all();
+        $request->validate([
+            'payment_ids' => 'required',
+            'type' => 'required|string|in:monthly,annual',
+            'payment_method' => 'required|string|in:cash,upi',
+            'transaction_id' => 'nullable|string|max:255',
+            'note' => 'nullable|string|max:1000'
+        ]);
+        $payment_ids = explode(',', $inputs['payment_ids']);
+        if(count($payment_ids) == 0) {
+            return response()->json(['message' => 'No payments selected to process.', 'status' => 'failed'], 400);
+        }
+        $first_payment = FeePaymentSchedule::where(['id' => $payment_ids[0]])->first();
+        if(!$first_payment) {
+            return response()->json(['message' => 'Invalid payment selected.', 'status' => 'failed'], 400);
+        }
+        $member_id = $first_payment->member_id;
+        $total_amount = 0;
+        foreach($payment_ids as $pid) {
+            $payment = FeePaymentSchedule::where(['id' => $pid, 'is_paid' => false])->first();
+            if($payment) {
+                $total_amount += $payment->amount;
+            }
+        }
+        if($total_amount == 0) {
+            return response()->json(['message' => 'Selected payments are already paid or invalid.', 'status' => 'failed'], 400);
+        }
+
+        // Create FeePayment record
+        $feePayment = new FeePayment();
+        $feePayment->member_id = $member_id;
+        $feePayment->fee_type = $inputs['type'];
+        $feePayment->pay_for_month = implode(',', $payment_ids);
+        $feePayment->amount = $total_amount;
+        $feePayment->payment_date = date('Y-m-d');
+        $feePayment->payment_method = $inputs['payment_method'];
+        $feePayment->transaction_id = $inputs['transaction_id'];
+        $feePayment->notes = $inputs['note'] ?? '';
+        $feePayment->save();
+
+        // Update FeePaymentSchedule records as paid
+        if($feePayment->id) {
+            foreach($payment_ids as $pid) {
+                $payment = FeePaymentSchedule::where(['id' => $pid, 'is_paid' => false])->first();
+                if($payment) {
+                    $payment->is_paid = true;
+                    $payment->paid_on = date('Y-m-d');
+                    $payment->fee_payment_id = $feePayment->id;
+                    $payment->save();
+                }
+            }
+        }
+
+        return response()->json(['message' => 'Fee payment processed successfully.', 'data' => ['fee_payment' => $feePayment], 'status' => 'success'], 200);
+    }
+
+    public function processMultipleFeePayment(Request $request) {
+        $inputs = $request->all();
+        \Log::info($inputs);
+        $payment_ids = $inputs['payment_member_ids'];
+        $type = $inputs['type'];
+        $payment_methods = $inputs['payment_method'];
+        $transaction_ids = $inputs['transaction_id'];
+        $notes = $inputs['note'];
+        if(count($payment_ids) == 0) {
+            return response()->json(['message' => 'No users selected to process.', 'status' => 'failed'], 400);
+        }
+        // Create FeePayment record
+        foreach ($payment_ids as $key => $member_id) {
+            $members_pending_fee = FeePaymentSchedule::where(['member_id' => $member_id, 'is_paid' => false])->first();
+            $feePayment = new FeePayment();
+            $feePayment->member_id = $member_id;
+            $feePayment->fee_type = $type[$key] ?? '';
+            $feePayment->pay_for_month = $members_pending_fee->for_month;
+            $feePayment->amount = $members_pending_fee->amount;
+            $feePayment->payment_date = date('Y-m-d');
+            $feePayment->payment_method = $payment_methods[$key] ?? '';
+            $feePayment->transaction_id = $transaction_ids[$key] ?? '';
+            $feePayment->notes = $notes[$key] ?? '';
+            $feePayment->save();
+            if($feePayment->id) {
+                $payment = FeePaymentSchedule::where(['id' => $members_pending_fee->id, 'is_paid' => false])->first();
+                if($payment) {
+                    $payment->is_paid = true;
+                    $payment->paid_on = date('Y-m-d');
+                    $payment->fee_payment_id = $feePayment->id;
+                    $payment->save();
+                }
+            }
+        }
+        return response()->json(['message' => 'Multiple Fee payment processed successfully.', 'status' => 'success'], 200);
+    }
+
+    public function downloadReceipt(Request $request, $id, $membershipId) {
+        // Find the fee payment schedule record
+        $paymentSchedule = FeePaymentSchedule::with(['member', 'feePayment'])->find($id);
+        
+        if (!$paymentSchedule || !$paymentSchedule->is_paid) {
+            //return redirect()->back()->with('error', 'Receipt not found or payment not completed.');
+            return response()->json(['message' => 'Receipt not found or payment not completed.', 'status' => 'failed'], 404);
+        }
+
+        // Get member and payment details
+        $member = $paymentSchedule->member;
+        $feePayment = $paymentSchedule->feePayment;
+        
+        if (!$member || !$feePayment) {
+            //return redirect()->back()->with('error', 'Invalid receipt data.');
+            return response()->json(['message' => 'Invalid receipt data.', 'status' => 'failed'], 404);
+        }
+
+        $membership = Membership::where(['id' => $membershipId])->first();
+
+        // Get client settings
+        $client_settings = $request->client_settings ?? Client::first();
+
+        // Generate receipt content (you can customize this as needed)
+        $receiptData = [
+            'receipt_id' => 'REC-' . str_pad($paymentSchedule->id, 6, '0', STR_PAD_LEFT),
+            'member_name' => $member->name,
+            'member_id' => $member->id,
+            'membership_plan' => $membership->type,
+            'payment_date' => $feePayment->payment_date,
+            'amount' => $paymentSchedule->amount,
+            'for_month' => $paymentSchedule->for_month,
+            'payment_method' => $feePayment->payment_method,
+            'transaction_id' => $feePayment->transaction_id,
+        ];
+
+        // Return the receipt view in a new tab/window
+        return response()->view('admin.receipt', compact('receiptData', 'paymentSchedule', 'member', 'feePayment', 'client_settings'))->header('Content-Type', 'text/html');
+    }
+
+    public function downloadOneTimeReceipt(Request $request, $id, $membershipId) {
+        // Get client settings
+        $client_settings = $request->client_settings ?? Client::first();
+        $member = User::where(['id' => $id, 'isAdmin' => 0])->first();
+        $membership = Membership::where(['id' => $membershipId])->first();
+        $fee_payment_schedule = FeePaymentSchedule::where(['member_id' => $id, 'membership_type' => $membershipId])->get();
+        $first_month = $fee_payment_schedule[0]->for_month ?? '';
+        $last_month = $fee_payment_schedule[count($fee_payment_schedule)-1]->for_month ?? '';
+        $amount = 0;
+        if($membership->payment_type == 'single') {
+            $amount = $membership->one_time_fee;
+        } else {
+            $amount = $membership->admission_fee + $membership->monthly_fee * $membership->duration_months;
+        }
+
+        // Generate receipt content (you can customize this as needed)
+        $receiptData = [
+            // 'receipt_id' => 'REC-' . str_pad($member->id, 6, '0', STR_PAD_LEFT),
+            'member_name' => $member->name,
+            'member_id' => $member->id,
+            'membership_plan' => $membership->type,
+            'payment_date' => date('Y-m-d', strtotime($member->created_at)),
+            'amount' => $amount,
+            'for_month' => $first_month . ' to ' . $last_month,
+            'payment_method' => '',
+            'transaction_id' => '',
+        ];
+
+        // Return the receipt view in a new tab/window
+        return response()->view('admin.receipt', compact('receiptData', 'client_settings'))->header('Content-Type', 'text/html');
+    }
+
+    public function getAttendance(Request $request) {
+        $client_settings = $request->client_settings;
+        $allMembers = User::where(['isAdmin' => 0])->select('id','name', 'phone_no')->get();
+        $today = date('Y-m-d');
+        $member_attendances = User::where(['isAdmin' => 0])->leftJoin('attendance', function($join) use ($today) {
+                       $join->on('users.id', '=', 'attendance.member_id')
+                            ->where('attendance.attendance_date', '=', $today);
+                       })
+                       ->select('users.id', 'users.name', 'users.phone_no', 'attendance.check_in_time', 'attendance.check_out_time', 
+                       'attendance.status', 'attendance.shift')
+                       ->get();
+        return view('admin.attendance', compact('client_settings', 'allMembers', 'member_attendances'));
+    }
+
+    public function saveAttendance(Request $request, $member_id) {
+        $inputs = $request->all();
+        $today = date('Y-m-d');
+        $attendance = Attendance::where(['member_id' => $member_id, 'attendance_date' => $today])->first();
+        if($attendance) {
+                return response()->json(['message' => 'Member already checked in today.', 'status' => 'failed'], 400);
+        } else {
+            if(date('H') >= 6 && date('H') < 12) {
+                $inputs['shift'] = 'morning';
+            } else if(date('H') >= 12 && date('H') < 18) {
+                $inputs['shift'] = 'afternoon';
+            } else {
+                $inputs['shift'] = 'evening';
+            }
+            $attendance = new Attendance();
+            $attendance->member_id = $member_id;
+            $attendance->attendance_date = $today;
+            $attendance->check_in_time = date('h:i');
+            $attendance->status = 'present';
+            $attendance->shift = $inputs['shift'];
+            $attendance->save();
+            return response()->json(['message' => 'Member checked in successfully.', 'status' => 'success', 
+                                    'check_in_time' => $attendance->check_in_time, 'shift' => $attendance->shift], 200);
+        }
+    }
+
+    public function attendanceReport(Request $request) {
+        $client_settings = $request->client_settings;
+        $allMembers = User::where(['isAdmin' => 0])->select('id','name', 'phone_no')->get();
+        return view('admin.attendance_report', compact('client_settings', 'allMembers'));
+    }
+
+    public function attendanceReportData(Request $request) {
+        $inputs = $request->all();
+        if(!isset($inputs['from_date']) || !isset($inputs['to_date'])) {
+            return response()->json(['message' => 'Please select from date and to date', 'status' => 'failed']);
+        }
+        $attendances_individual = $attendances_all = $member_details = [];
+        if($inputs['memberId'] == "" || $inputs['memberId'] == 'all') {
+            \Log::info('All members attendance');
+            $from_date = date('Y-m-d', strtotime($inputs['from_date']));
+            $to_date = date('Y-m-d', strtotime($inputs['to_date']));
+            $members = User::where(['isAdmin' => 0])->orderBy('name','asc')->select('id', 'name')->get();
+            foreach ($members as $member) {
+                for($cdate=$from_date; $cdate <= $to_date; $cdate = date('Y-m-d', strtotime($cdate . ' +1 day'))) {
+                    $attendances = Attendance::where(['member_id' => $member->id])
+                                ->where('attendance_date', '=', $cdate)
+                                ->orderBy('attendance_date', 'desc')
+                                ->get();
+                    $attendances_all[$member->id][$cdate]['id'] = $member->id;
+                    $attendances_all[$member->id][$cdate]['name'] = $member->name;
+                    if(count($attendances) > 0) {
+                        $attendances_all[$member->id][$cdate]['status'] = 'Present';
+                    } else {
+                        if($cdate > date('Y-m-d')) {
+                            // Future date
+                            $attendances_all[$member->id][$cdate]['status'] = 'NA';    
+                        } else {
+                            $attendances_all[$member->id][$cdate]['status'] = 'Absent';    
+                        }
+                        //$attendances_all[$member->id][$cdate]['status'] = 'Absent';    
+                    }
+                }
+            }
+            return response()->json(['message' => 'Attendance data fetched successfully.', 'data' => $attendances_all, 'status' => 'success', 'members' => $members], 200);
+        } else {
+            $from_date = date('Y-m-d', strtotime($inputs['from_date']));
+            $to_date = date('Y-m-d', strtotime($inputs['to_date']));
+            $member = User::where(['isAdmin' => 0, 'id' => $inputs['memberId']])->first();
+            for($cdate=$from_date; $cdate <= $to_date; $cdate = date('Y-m-d', strtotime($cdate . ' +1 day'))) {
+                $attendances = Attendance::where(['member_id' => $inputs['memberId']])
+                            ->where('attendance_date', '=', $cdate)
+                            ->orderBy('attendance_date', 'desc')
+                            ->get();
+                $attendances_individual[$cdate]['date'] = $cdate;
+                if(count($attendances) > 0) {
+                    $attendances_individual[$cdate]['status'] = 'Present';
+                    $attendances_individual[$cdate]['check_in_time'] = date('h:i A', strtotime($attendances[0]->check_in_time));
+                    $attendances_individual[$cdate]['shift'] = $attendances[0]->shift;
+                } else {
+                    if($cdate > date('Y-m-d')) {
+                        // Future date
+                        $attendances_individual[$cdate]['status'] = 'NA';    
+                        $attendances_individual[$cdate]['check_in_time'] = 'NA';
+                        $attendances_individual[$cdate]['shift'] = 'NA';
+                    } else {
+                        $attendances_individual[$cdate]['status'] = 'Absent';    
+                        $attendances_individual[$cdate]['check_in_time'] = 'NA';
+                        $attendances_individual[$cdate]['shift'] = 'NA';
+                    }
+                }
+            }
+            return response()->json(['message' => 'Attendance data fetched successfully.', 'data' => $attendances_individual, 'status' => 'success', 'member' => $member], 200);
+        }
+    }
+
+    public function downloadAttendanceReport(Request $request) {
+        $inputs = $request->all();
+        
+        if(!isset($inputs['from_date']) || !isset($inputs['to_date'])) {
+            return response()->json(['message' => 'Please select from date and to date', 'status' => 'failed']);
+        }
+        
+        $from_date = date('Y-m-d', strtotime($inputs['from_date']));
+        $to_date = date('Y-m-d', strtotime($inputs['to_date']));
+        $dateRange = $from_date . ' to ' . $to_date;
+        
+        if($inputs['memberId'] == "" || $inputs['memberId'] == 'all') {
+            // All members attendance export
+            $members = User::where(['isAdmin' => 0])->orderBy('name','asc')->select('id', 'name')->get();
+            $attendances_all = [];
+            
+            foreach ($members as $member) {
+                for($cdate=$from_date; $cdate <= $to_date; $cdate = date('Y-m-d', strtotime($cdate . ' +1 day'))) {
+                    $attendances = Attendance::where(['member_id' => $member->id])
+                                ->where('attendance_date', '=', $cdate)
+                                ->orderBy('attendance_date', 'desc')
+                                ->get();
+                    $attendances_all[$member->id][$cdate]['id'] = $member->id;
+                    $attendances_all[$member->id][$cdate]['name'] = $member->name;
+                    if(count($attendances) > 0) {
+                        $attendances_all[$member->id][$cdate]['status'] = 'Present';
+                    } else {
+                        $attendances_all[$member->id][$cdate]['status'] = 'Absent';    
+                    }
+                }
+            }
+            
+            $filename = 'attendance_report_all_members_' . $from_date . '_to_' . $to_date . '.xlsx';
+            return Excel::download(new \App\Exports\ReportsExport($attendances_all, 'attendance_all', null, $members, $dateRange), $filename);
+            
+        } else {
+            // Individual member attendance export
+            $member = User::where(['isAdmin' => 0, 'id' => $inputs['memberId']])->first();
+            $attendances_individual = [];
+            
+            for($cdate=$from_date; $cdate <= $to_date; $cdate = date('Y-m-d', strtotime($cdate . ' +1 day'))) {
+                $attendances = Attendance::where(['member_id' => $inputs['memberId']])
+                            ->where('attendance_date', '=', $cdate)
+                            ->orderBy('attendance_date', 'desc')
+                            ->get();
+                $attendances_individual[$cdate]['date'] = $cdate;
+                if(count($attendances) > 0) {
+                    $attendances_individual[$cdate]['status'] = 'Present';
+                    $attendances_individual[$cdate]['check_in_time'] = date('h:i A', strtotime($attendances[0]->check_in_time));
+                    $attendances_individual[$cdate]['shift'] = $attendances[0]->shift;
+                } else {
+                    $attendances_individual[$cdate]['status'] = 'Absent';    
+                    $attendances_individual[$cdate]['check_in_time'] = 'NA';
+                    $attendances_individual[$cdate]['shift'] = 'NA';
+                }
+            }
+            
+            $filename = 'attendance_report_' . str_replace(' ', '_', $member->name) . '_' . $from_date . '_to_' . $to_date . '.xlsx';
+            return Excel::download(new \App\Exports\ReportsExport($attendances_individual, 'attendance_individual', $member, null, $dateRange), $filename);
+        }
+    }
+
+    public function membersWithPendingFees(Request $request) {
+        $client_settings = $request->client_settings;
+        $result = [];
+        $pending_list = User::where(['isAdmin' => 0])
+                        ->join('fee_payment_schedule', 'users.id', '=', 'fee_payment_schedule.member_id')
+                        ->where('fee_payment_schedule.is_paid', 0)
+                        ->where('fee_payment_schedule.due_date', '<', date('Y-m-d'))
+                        ->select('users.id', 'users.name', 'users.phone_no', 'fee_payment_schedule.for_month', 'fee_payment_schedule.due_date', 'fee_payment_schedule.amount')
+                        ->orderBy('users.name', 'asc')
+                        ->get();
+        $allMembers = User::where(['isAdmin' => 0])->select('id', 'name')->get();
+        foreach ($pending_list as $key => $member) {
+            if(key_exists($member->id, $result)) {
+                $result[$member->id]['pending_fees'][] = [
+                    'for_month' => $member->for_month
+                ];
+            } else {
+                $result[$member->id] = [
+                    'name' => $member->name,
+                    'pending_fees' => [[
+                        'for_month' => $member->for_month
+                    ]]
+                ];
+            }
+        }
+        return response()->json(['message' => 'Members with pending fees fetched successfully.', 'data' => $result, 'status' => 'success'], 200);
+    }
+
+    public function transferMembership(Request $request) {
+        $client_settings = $request->client_settings;
+        return view('admin.transfer_membership', compact('client_settings'));
+    }
+
+    public function getAttendanceReport($member_id, Request $request) {
+        $inputs = $request->all();
+        $attendances_individual = [];
+        $from_date = date('Y-m-d', strtotime($inputs['from_date']));
+        $to_date = date('Y-m-d', strtotime($inputs['to_date']));
+        $member = User::where(['isAdmin' => 0, 'id' => $member_id])->first();
+        for($cdate=$from_date; $cdate <= $to_date; $cdate = date('Y-m-d', strtotime($cdate . ' +1 day'))) {
+            $attendances = Attendance::where(['member_id' => $member_id])->where('attendance_date', '=', $cdate)->get();
+            $attendances_individual[$cdate]['date'] = $cdate;
+            if(count($attendances) > 0) {
+                $attendances_individual[$cdate]['status'] = 'Present';
+                $attendances_individual[$cdate]['check_in_time'] = date('h:i A', strtotime($attendances[0]->check_in_time));
+                $attendances_individual[$cdate]['shift'] = ucfirst($attendances[0]->shift);
+            } else {
+                if($cdate > date('Y-m-d')) {
+                    // Future date
+                    $attendances_individual[$cdate]['status'] = 'NA';    
+                    $attendances_individual[$cdate]['check_in_time'] = 'NA';
+                    $attendances_individual[$cdate]['shift'] = 'NA';
+                    continue;
+                } else {
+                    $attendances_individual[$cdate]['status'] = 'Absent';    
+                    $attendances_individual[$cdate]['check_in_time'] = 'NA';
+                    $attendances_individual[$cdate]['shift'] = 'NA';
+                }
+            }
+        }
+        return response()->json(['data' => $attendances_individual, 'status' => 'success'], 200);
+    }
+
+    public function todayAttendance() {
+        $today = date('Y-m-d');
+        $total_members = User::where(['isAdmin' => 0])->count();
+        $checked_in_members = User::where(['isAdmin' => 0])
+            ->join('attendance', function($join) use ($today) {
+                $join->on('users.id', '=', 'attendance.member_id')
+                     ->where('attendance.attendance_date', '=', $today)
+                     ->where('attendance.status', '=', 'present');
+            })->count();
+        $data = [
+            'status' => ['Checked In', 'Not Checked In'],
+            'attendance' => [$checked_in_members, $total_members - $checked_in_members]
+        ];
+        return response()->json($data);
+    }
+}

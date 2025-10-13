@@ -1,0 +1,236 @@
+/* Loader background */
+.loader-overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0; left: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* Spinner */
+.loader {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #3490dc; /* Laravel blue */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+}
+
+.loadercontent {
+    margin-left: 5px;
+    font-size: 1.2em;
+    color: #3490dc;
+    text-align: center;
+}
+
+/* Spin animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.d-none {
+    display: none !important;
+}
+
+.mark_attendance {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.register_member {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.add_health_record_btn {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.allot_trainer {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.register_trainer {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.process_payment {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.attn_report_btn {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.attn_download_report_btn {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;
+    cursor: pointer;    
+}
+.register_client {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.add_new_membership {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.membership_edit {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.member_fee_month {
+    background-color: #007bff;
+    color: white;
+    border: 1px solid #007bff;
+    padding: 2px 6px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.process_fee_payment {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.pay_for_multiple_members {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.process_multiple_payment {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.back_to_fee_collection {
+    background-color: #f33412;
+    color: white;
+    font-weight: bold;
+    border: 1px solid #f33412;
+    padding: 5px 10px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.progress_chart_member_name {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;   
+}
+.mark_attendance:hover {
+    background-color: #FCFCFC;
+}
+.register_member:hover {
+    background-color: #2341e7;
+    color: white;
+}
+.add_health_record_btn:hover {
+    background-color: #FCFCFC;
+}
+.allot_trainer:hover {
+    background-color: #FCFCFC;
+}
+.register_trainer:hover {
+    background-color: #2341e7;
+    color: white;
+}
+.process_payment:hover {
+    background-color: #FCFCFC;
+}
+.attn_report_btn:hover {
+    background-color: #FCFCFC;
+}
+.attn_download_report_btn:hover {
+    background-color: #FCFCFC;
+}
+.register_client:hover {
+    background-color: #2341e7;
+    color: white;
+}
+.add_new_membership:hover {
+    background-color: #2341e7;
+    color: white;
+}
+.membership_edit:hover {
+    background-color: #2341e7;
+    color: white;
+}
+.pay_for_multiple_members:hover {
+    background-color: #FCFCFC;
+}
+.process_multiple_payment:hover {
+    background-color: #FCFCFC;
+}
