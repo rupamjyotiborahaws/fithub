@@ -36,7 +36,7 @@
     <div class="row">
         <div class="col-md-12 col-lg-12 col-sm-12 col-sx-12 mb-4">
             {{-- Trainer Registration --}}
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
+            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
                 <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Trainer Registration</h5>
                 <form method="POST" action="" autocomplete="on">
                     @csrf

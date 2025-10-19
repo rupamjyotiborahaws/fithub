@@ -2,6 +2,10 @@ $(document).ready(function() {
         $("#loader").hide();
         let selectedPayments = [];
         let selectedMembersPayments = [];
+        let fee_collections_filter =  {
+                fee_month: 0,
+                membership_id: 0
+        };
         const baseUrl = window.location.origin;
         const all_months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const registrationChartId = 'registrationChart';
@@ -9,6 +13,8 @@ $(document).ready(function() {
         const trainerAllotmentChartId = 'trainerAllotmentChart';
         const attendanceChartId = 'todayAttendanceChart';
         const progressChartCanvasId = 'progressChartCanvasId';
+        const feeCollectionsDisplayChartCanvasId = 'feeCollectionsDisplayChartCanvasId';
+
         
         // Store chart instances for proper cleanup
         let chartInstances = {};
@@ -40,6 +46,30 @@ $(document).ready(function() {
                 });
         }
 
+        function displayFeeCollectionsChart(data, filter) {
+                if (!data || !Array.isArray(data.label) || !Array.isArray(data.values)) {
+                        console.error('Unexpected response shape', data);
+                        return;
+                }
+                const chartElement = document.getElementById(feeCollectionsDisplayChartCanvasId);
+                if(chartElement) {
+                        // Clear existing chart before creating new one
+                        if (chartInstances[feeCollectionsDisplayChartCanvasId]) {
+                                chartInstances[feeCollectionsDisplayChartCanvasId].destroy();
+                                delete chartInstances[feeCollectionsDisplayChartCanvasId];
+                        }
+                        // Clear the canvas
+                        const ctx = chartElement.getContext('2d');
+                        ctx.clearRect(0, 0, chartElement.width, chartElement.height);
+                        const chartInstance = window.renderFeeCollectionsChart(feeCollectionsDisplayChartCanvasId, data.label, data.values, filter);
+                        if (chartInstance) {
+                                chartInstances[feeCollectionsDisplayChartCanvasId] = chartInstance;
+                        }
+                } else {
+                        console.error('Chart element not found:', feeCollectionsDisplayChartCanvasId);
+                }
+        }
+
         function loadCurrentMonthFeeCollectionData() {
                 console.log('Loading current month fee collection data...');
                 $.ajax({
@@ -53,8 +83,6 @@ $(document).ready(function() {
                                         return;
                                 }
                                 const chartElement = document.getElementById(currentMonthFeeCollectionChartId);
-                                console.log('Chart element found:', chartElement);
-                                console.log('renderFeeCollectionChart function available:', typeof window.renderFeeCollectionChart);
                                 
                                 if (chartElement) {
                                         const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -343,26 +371,50 @@ $(document).ready(function() {
 
         // Show one time amount when selected from membership dropdown
         $(document).on('change', '.membership_type', function() {
-            const selectedOption = $(this).val();
-            console.log('Selected membership option:', selectedOption);
-            const membership = membershipData.find(m => m.id == selectedOption);
-            console.log('Matched membership data:', membership);
-            if(membership) {
-                const oneTimeAmount = membership.one_time_fee;
-                const payment_type = membership.payment_type;
-                console.log('One time amount:', oneTimeAmount, 'Payment type:', payment_type);
-                if (payment_type === 'single') {
-                    $('.one_time_amount').val(oneTimeAmount);
-                    $('.one_time_single').removeClass('d-none');
-                    $('.one_time_amount').prop('disabled', true);
+                const selectedOption = $(this).val();
+                console.log('Selected membership option:', selectedOption);
+                const membership = membershipData.find(m => m.id == selectedOption);
+                console.log('Matched membership data:', membership);
+                if(membership) {
+                        const oneTimeAmount = membership.one_time_fee;
+                        const payment_type = membership.payment_type;
+                        console.log('One time amount:', oneTimeAmount, 'Payment type:', payment_type);
+                        if (payment_type === 'single') {
+                        $('.one_time_amount').val(oneTimeAmount);
+                        $('.one_time_single').removeClass('d-none');
+                        $('.one_time_amount').prop('disabled', true);
+                        } else {
+                        $('.one_time_amount').val('');
+                        $('.one_time_single').addClass('d-none');
+                        }
+                        const membership_time_schedule = membershipTimeSchedule.filter(m => m.membership_id == selectedOption);
+                        console.log('Matched membership time schedule:', membership_time_schedule);
+                        if(membership_time_schedule && membership_time_schedule.length > 0) {
+                                let scheduleInputs = ``;
+                                membership_time_schedule.forEach((schedule, index) => {
+                                        let count = index + 1;
+                                        scheduleInputs += `<div class="row mt-2" id="time_schedule_div_${count}">
+                                        <div class="col-md-3">
+                                                <input type="time" class="form-control" style="width:100%" id="time_schedule_date_${count}" value="${schedule.start_time}" disabled>
+                                        </div>
+                                        <div class="col-md-2">
+                                                <input type="radio" id="time_schedule_${count}" name="time_schedule" style="margin-top:12px; font-size:30px;" value="${schedule.id}">
+                                        </div>
+                                        <div class="col-md-7">
+                                                
+                                        </div></div>`;
+                                });
+                                $('.time_schedules_container').html(scheduleInputs);
+                                $('.time_schedules_container_display').removeClass('d-none');
+                        } else {
+                                //$('.time_schedules_container').html('<span style="color:#555;">No time schedules defined for this membership.</span>');
+                                $('.time_schedules_container').html('');
+                                $('.time_schedules_container_display').addClass('d-none');
+                        }
                 } else {
-                    $('.one_time_amount').val('');
-                    $('.one_time_single').addClass('d-none');
+                        $('.one_time_amount').val('');
+                        $('.one_time_single').addClass('d-none');
                 }
-            } else {
-                $('.one_time_amount').val('');
-                $('.one_time_single').addClass('d-none');
-            }
         });
 
         // Confirm one time fee payment checkbox
@@ -392,6 +444,8 @@ $(document).ready(function() {
                                 toastr.options.timeOut = 5000;
                                 toastr.success(response.message || "Member registered successfully");
                                 form[0].reset();
+                                $('input[name="time_schedule"]').prop('checked', false);
+                                location.reload();
                         },
                         error: function(xhr, status, err) {
                                 toastr.options.timeOut = 5000;
@@ -480,13 +534,10 @@ $(document).ready(function() {
                                 setTimeout(() => {
                                         location.reload();
                                 }, 3000);
-                                // $('#addMembershipModal').modal('hide');
-                                //addNewMembershipToTable(response.data);
                         },
                         error: function(xhr, status, err) {
                                 toastr.options.timeOut = 5000;
                                 toastr.error("Error adding membership plan");
-                                //console.error('Error registering member:', status, err, xhr.responseText);
                         }
                 });
         });
@@ -505,6 +556,7 @@ $(document).ready(function() {
                 const description = button.data('description');
                 const is_active = button.data('is_active');
                 const is_transferable = button.data('is_transferable');
+                const time_schedules = button.data('time_schedules');
                 
                 // Populate the edit modal form fields
                 const editModal = $('#editMembershipModal');
@@ -536,37 +588,169 @@ $(document).ready(function() {
                 } else {
                         editModal.find('input[name="is_transferable"]').prop('checked', false);
                 }
+                if(time_schedules != 'null' && time_schedules != '') {
+                        console.log("Time schedules : " + time_schedules);
+                        editModal.find('.time_schedule_edit').removeClass('d-none');
+                        editModal.find('input[name="is_edit_time_schedule_required"]').prop('checked', true);
+                        $('.time_schedule_edit').empty();
+                        const schedules = time_schedules.split(',');
+                        console.log("Schedules : " +schedules);
+                        let scheduleInputs = '';
+                        schedules.reverse();
+                        schedules.forEach((time, index) => {
+                                let count = index + 1;
+                                scheduleInputs += `<div class="row mt-2" id="time_schedule_edit_div_${count}">
+                                        <div class="col-md-6">
+                                                <input type="time" style="width:100%;" class="form-control" id="time_schedule_edit_${count}" name="time_schedules_edit[]" value="${time}">
+                                        </div>
+                                        <div class="col-md-6">
+                                                <a class="mt-1 remove_time_schedule_edit" style="text-decoration:none; float:left;" data-id="time_schedule_edit_div_${count}">X</a>
+                                        </div>
+                                </div>`;
+                        });
+                        scheduleInputs += `<button class="mt-2 add_more_time_schedule_edit">+ Add more</button>`;
+                        editModal.find('.time_schedule_edit').append(scheduleInputs);
+                } else {
+                        let scheduleInputs = `<div class="row mt-2" id="time_schedule_edit_div_1">
+                                        <div class="col-md-6">
+                                                <input type="time" style="width:100%;" class="form-control" id="time_schedule_edit_1" name="time_schedules_edit[]" value="">
+                                        </div>
+                                        <div class="col-md-6"></div>
+                                </div>`;
+                        scheduleInputs += `<button class="mt-2 add_more_time_schedule_edit">+ Add more</button>`;
+                        editModal.find('.time_schedule_edit').empty();
+                        editModal.find('.time_schedule_edit').append(scheduleInputs);
+                        editModal.find('input[name="is_edit_time_schedule_required"]').prop('checked', false);
+                }
                 // Store the membership ID for the update request
                 editModal.find('input[name="membership_id"]').val(id);
         });
 
         // Handle edit membership form submission
-        $('.edit_membership').click(function(e) {
+        $('.edit_membership').click(async function(e) {
                 e.preventDefault();
-                $('.loadercontent').html('Updating membership plan, please wait...');
-                $("#loader").show();
                 const form = $(this).closest('form');
-                console.log('Form data to be submitted:', form.serialize());
-                $.ajax({
-                        url: baseUrl + '/api/edit_memberships',
-                        method: 'POST',
-                        data: form.serialize(),
-                        success: function(response) {
-                                $('.loadercontent').html('');
-                                $("#loader").hide();
-                                toastr.options.timeOut = 5000;
-                                toastr.success(response.message || "Membership plan updated successfully");
-                                //$('#editMembershipModal').modal('hide');
-                                // Optionally reload the page or update the table row
-                                location.reload();
-                        },
-                        error: function(xhr, status, err) {
-                                $('.loadercontent').html('');
-                                $("#loader").hide();
-                                toastr.options.timeOut = 5000;
-                                toastr.error("Error updating membership plan");
+                $('.loadercontent').html('Validating the data, please wait...');
+                $("#loader").show();
+                let validation_result = await validate_membership_data(form);
+                if(!validation_result[1]) {
+                        $('.loadercontent').html('');
+                        $("#loader").hide();
+                        toastr.options.timeOut = 5000;
+                        toastr.error(validation_result[0] || "Validation failed! Please check all the data in the form");
+                } else {
+                        $('.loadercontent').html('Updating membership plan, please wait...');
+                        $("#loader").show();
+                        console.log('Form data to be submitted:', form.serialize());
+                        $.ajax({
+                                url: baseUrl + '/api/edit_memberships',
+                                method: 'POST',
+                                data: form.serialize(),
+                                success: function(response) {
+                                        $('.loadercontent').html('');
+                                        $("#loader").hide();
+                                        toastr.options.timeOut = 5000;
+                                        toastr.success(response.message || "Membership plan updated successfully");
+                                        location.reload();
+                                },
+                                error: function(xhr, status, err) {
+                                        $('.loadercontent').html('');
+                                        $("#loader").hide();
+                                        toastr.options.timeOut = 5000;
+                                        toastr.error("Error updating membership plan");
+                                }
+                        });
+                }
+        });
+
+        async function validate_membership_data(form) {
+                console.log('Validating membership data...');
+                console.log(form.serializeArray());
+                if(form.find('#is_edit_time_schedule_required').is(':checked')) {
+                        let time_schedules_edit = form.find('input[name="time_schedules_edit[]"]').map(function() {
+                                return $(this).val();
+                        }).get().filter(val => val); // Get values and filter out empty ones
+                        if(time_schedules_edit.length == 0) {
+                                return ['Atleast one time schedule is required', false];
                         }
-                });
+                }
+                return ['Validation passed', true];
+        }
+
+        // Show/hide time schedule inputs based on checkbox
+        $('#is_time_schedule_required').change(function() {
+                if($(this).is(':checked')) {
+                        $('.time_schedule').removeClass('d-none');
+                } else {
+                        $('.time_schedule').addClass('d-none');
+                }
+        });
+
+        // Add more schedule time input
+        $(document).on('click', '.add_more_time_schedule', function(e) {
+                e.preventDefault();
+                let count = $('.time_schedule input[type="time"]').length;
+                count++;
+                const newInput = `<div class="row mt-2" id="time_schedule_div_${count}">
+                        <div class="col-md-6">
+                        <input type="time" style="width:100%;" class="form-control" id="time_schedule_${count}" name="time_schedules[]">
+                        </div>
+                        <div class="col-md-6">
+                                <a class="mt-1 remove_time_schedule" style="text-decoration:none; float:left;" data-id="time_schedule_div_${count}">X</a>
+                        </div>
+                </div>`;
+                $(`.time_schedule #time_schedule_div_${count - 1}`).after(newInput);
+        });
+
+        // Rmove schedule time input
+        $(document).on('click', '.remove_time_schedule', function(e) {
+                e.preventDefault();
+                const divId = $(this).data('id');
+                $(`#${divId}`).remove();
+        });
+
+        // Show/hide time schedule inputs based on checkbox
+        $('#is_edit_time_schedule_required').change(function() {
+                if($(this).is(':checked')) {
+                        $('.time_schedule_edit').removeClass('d-none');
+                } else {
+                        $('.time_schedule_edit').addClass('d-none');
+                }
+        });
+
+        // Add more schedule time input
+        $(document).on('click', '.add_more_time_schedule_edit', function(e) {
+                e.preventDefault();
+                let count = $('.time_schedule_edit input[type="time"]').length;
+                count++;
+                const newInput = `<div class="row mt-2" id="time_schedule_edit_div_${count}">
+                        <div class="col-md-6">
+                                <input type="time" style="width:100%;" class="form-control" id="time_schedule_edit_${count}" name="time_schedules_edit[]">
+                        </div>
+                        <div class="col-md-6">
+                                <a class="mt-1 remove_time_schedule_edit" style="text-decoration:none; float:left;" data-id="time_schedule_edit_div_${count}">X</a>
+                        </div>
+                </div>`;
+                $(`.time_schedule_edit #time_schedule_edit_div_${count - 1}`).after(newInput);
+        });
+
+        // Rmove schedule time input
+        $(document).on('click', '.remove_time_schedule_edit', function(e) {
+                e.preventDefault();
+                const divId = $(this).data('id');
+                $(`#${divId}`).remove();
+        });
+
+        // Clear selected data in membership add form when modal is hidden
+        $('#addMembershipModal').on('hidden.bs.modal', function() {
+                $(this).find('form')[0].reset();
+                $('.time_schedule').addClass('d-none');
+        });
+
+        // Clear selected data in membership edit form when modal is hidden
+        $('#editMembershipModal').on('hidden.bs.modal', function() {
+                $(this).find('form')[0].reset();
+                $('.time_schedule_edit').addClass('d-none');
         });
 
         $('#memberSearch').on('input', function() {
@@ -586,34 +770,6 @@ $(document).ready(function() {
                         container.append(memberDiv);
                 });
         });
-
-        /*function addNewMembershipToTable(membership) {
-                if (!membership || !membership.id) {
-                        console.error('Invalid membership data', membership);
-                        return;
-                }
-                const tableBody = $('#membershipTable tbody');
-                const newRow = `<tr style="background-color:{{ $loop->even ? '#f8f9fa' : '#ffffff' }};">
-                        <td style="padding:12px; border:1px solid #ddd;">${membership.type}</td>
-                        <td style="padding:12px; border:1px solid #ddd;">${membership.duration_months}</td>
-                        <td style="padding:12px; border:1px solid #ddd;">${membership.price}</td>
-                        <td style="padding:12px; border:1px solid #ddd;">${membership.benefits == null ? 'N/A' : membership.benefits}</td>
-                        <td style="padding:12px; border:1px solid #ddd;">${membership.description == null ? 'N/A' : membership.description}</td>
-                        <td style="padding:12px; border:1px solid #ddd; text-align:center;">
-                                <button class="btn btn-primary btn-sm me-1" 
-                                    data-id="${membership.id}"
-                                    data-type="${membership.type}"
-                                    data-duration="${membership.duration_months}"
-                                    data-price="${membership.price}"
-                                    data-benefits="${membership.benefits || ''}"
-                                    data-description="${membership.description || ''}"
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#editMembershipModal">Edit
-                                </button>
-                        </td>
-                </tr>`;
-                tableBody.append(newRow);
-        }*/
 
         // Handle edit button click to populate edit modal
         $(document).on('click', '[data-bs-target="#addHealthRecord"]', function() {
@@ -1432,5 +1588,52 @@ $(document).ready(function() {
                 const progressChartDisplayModal = $('#progressChartDisplayModal');
                 const member_id = progressChartDisplayModal.find('input[type="hidden"][name="member_id"]').val();
                 loadMemberProgressChart(matric, member_id);
+        });
+
+        // Show Fee collection
+        $(document).on('change', '#fee_month', function(e) {
+                e.preventDefault();
+                const fee_month = $(this).val();
+                fee_collections_filter.fee_month = fee_month;
+                fee_collections_filter.membership_id = $('#memberships').val();
+                $.ajax({
+                        url: baseUrl + '/api/fee_collections',
+                        method: 'GET',
+                        data: {fee_collections_filter},
+                        success: function(response) {
+                                let data = response;
+                                displayFeeCollectionsChart(data, fee_collections_filter);
+                        },
+                        error: function(xhr, status, err) {
+                                toastr.options.timeOut = 5000;
+                                toastr.error("Error fetching fee collection report");
+                        }
+                });
+        });
+
+        $(document).on('change', '#memberships', function(e) {
+                e.preventDefault();
+                if($('#fee_month').val() == 0 || $('#fee_month').val() == '') {
+                        toastr.options.timeOut = 5000;
+                        toastr.error("Select a month");
+                        return;
+                }
+                const membership = $(this).val();
+                fee_collections_filter.membership_id = membership;
+                fee_collections_filter.fee_month = $('#fee_month').val();
+                $.ajax({
+                        url: baseUrl + '/api/fee_collections',
+                        method: 'GET',
+                        data: {fee_collections_filter},
+                        success: function(response) {
+                                let data = response;
+                                console.log('Fee collections response:', data);
+                                displayFeeCollectionsChart(data, fee_collections_filter);
+                        },
+                        error: function(xhr, status, err) {
+                                toastr.options.timeOut = 5000;
+                                toastr.error("Error fetching fee collection report");
+                        }
+                });
         });
 });

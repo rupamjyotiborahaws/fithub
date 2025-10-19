@@ -6,7 +6,7 @@
 <div class="container-fluid mx-auto py-6">
     <div class="row mb-6">
         <div class="col-md-12">
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; margin-bottom:10px;">
+            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; margin-bottom:10px;">
                 <div>
                     <input type="text" id="memberSearch" placeholder="Search Members..." class="w-100 mb-4 p-2 border rounded" style="border:1px solid #ccc; border-radius:4px; padding:8px;" />
                 </div>
@@ -19,7 +19,7 @@
     <div class="row">
         <div class="col-md-8 col-lg-8 col-sm-12 col-sx-12 mb-4">
             <div class="bg-white p-2 rounded-lg shadow-md">
-                <h5 class="font-semibold mb-4">User Registrations (Last 6 Months)</h5>
+                <h5 class="font-semibold mb-4">Member Registrations</h5>
                 <hr>
                 <div style="height: 350px;">
                     <canvas id="registrationChart"></canvas>
@@ -35,7 +35,7 @@
             <div class="bg-white p-2 rounded-lg shadow-md">
                 <h5 class="font-semibold mb-4">Members with Pending Fees</h5>
                 <hr>
-                <div style="height: 350px;" class="pending_fee_members">
+                <div style="height: 350px; overflow:auto;" class="pending_fee_members hide-scrollbar">
                     
                 </div>
             </div>

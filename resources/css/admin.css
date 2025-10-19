@@ -190,6 +190,41 @@
     padding: 5px 10px;  
     border-radius: 4px;   
 }
+.add_more_time_schedule, .add_more_time_schedule_edit {
+    background-color: white;
+    color: #007bff;
+    border: 1px solid #007bff;
+    padding: 5px 5px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.remove_time_schedule {
+    background-color: white;
+    color: #f33412;
+    font-weight: bold;
+    border: 1px solid #f33412;
+    padding: 2px 6px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.remove_time_schedule_edit {
+    background-color: white;
+    color: #f33412;
+    font-weight: bold;
+    border: 1px solid #f33412;
+    padding: 2px 6px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.show_fee_collection {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
 .mark_attendance:hover {
     background-color: #FCFCFC;
 }
@@ -232,5 +267,11 @@
     background-color: #FCFCFC;
 }
 .process_multiple_payment:hover {
+    background-color: #FCFCFC;
+}
+.add_more_time_schedule:hover {
+    background-color: #FCFCFC;
+}
+.show_fee_collection:hover{
     background-color: #FCFCFC;
 }

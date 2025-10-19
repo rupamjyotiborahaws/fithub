@@ -25,7 +25,7 @@
 <div class="container-fluid mx-auto py-6" style="min-height: 75vh;">
     <div class="row">
         <div class="col-md-9">
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 800px; overflow-x: auto;">
+            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 800px; overflow-x: auto;">
                 <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Fee Collection</h5>
                 <div class="fee_schedule">
                     <table id="fee_collection_table" style="border-collapse:collapse; width:100%; margin-bottom:1.25rem; border:1px solid #ddd;">
@@ -65,14 +65,14 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px; overflow: scroll;">
+            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px; overflow: scroll;">
                 <input type="text" id="memberSearchFeeCollection" placeholder="Search by Member ID, Name, or Phone No" 
                        style="width:100%; padding:8px 12px; margin-bottom:12px; border:1px solid #ccc; border-radius:4px;">
                 <div class="matched_members">
 
                 </div>
             </div>
-            <div class="card mt-2" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; overflow: scroll;">
+            <div class="card hide-scrollbar mt-2" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; overflow: scroll;">
                 <div>
                     <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Instructions</h5>
                     <ul class="instructions_list_fee_collection">
@@ -81,7 +81,7 @@
                     </ul>
                 </div>
             </div>
-            <div class="card mt-2" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; overflow: scroll;">
+            <div class="card hide-scrollbar mt-2" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; overflow: scroll;">
                 <h6 class="mb-4" id="chartHeader">Fee Collection status for the month of {{ \Carbon\Carbon::now()->format('M Y') }}</h6>
                 <div style="height: 350px;">
                     <canvas id="currentMonthFeeCollectionChart"></canvas>

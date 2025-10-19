@@ -11,8 +11,7 @@
     </div>
     <div class="row">
         <div class="col-md-12">
-            {{-- Membership Settings --}}
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; min-height: 600px; overflow: scroll;">
+            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; min-height: 600px; overflow: scroll;">
                 <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Available Memberships</h5>
                 <table id="membershipTable" style="border-collapse:collapse; width:100%; margin-bottom:1.25rem; border:1px solid #ddd;">
                     <thead>
@@ -56,6 +55,7 @@
                                     data-description="{{ $membership->description }}"
                                     data-is_active="{{ $membership->is_active }}"
                                     data-is_transferable="{{ $membership->is_transferable }}"
+                                    data-time_schedules="{{ $membership->time_schedules }}"
                                     data-bs-toggle="modal" 
                                     data-bs-target="#editMembershipModal"
                                 >
@@ -73,7 +73,7 @@
 </div>
 
 <!-- Add Membership Modal -->
-<div class="modal fade" id="addMembershipModal" tabindex="-1" aria-labelledby="addMembershipModalLabel" aria-hidden="true">
+<div class="modal fade" id="addMembershipModal" tabindex="-1" aria-labelledby="addMembershipModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" style="width:100%;">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -132,9 +132,24 @@
                             name="is_transferable">&nbsp;&nbsp;&nbsp;Enable Transfer
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-6 mt-4">
+                            <input type="checkbox" class="form-check-input" id="is_time_schedule_required" style="border: 2px solid #ccc;" name="is_time_schedule_required">&nbsp;&nbsp;&nbsp;Time Schedule Required
+                        </div>
+                        <div class="col-md-6 mt-4 time_schedule d-none" style="height:150px; overflow-y: scroll;">
+                            <div class="row" id="time_schedule_div_1">
+                                <div class="col-md-6">
+                                    <input type="time" style="width:100%;" class="form-control" id="time_schedule_1" name="time_schedules[]">
+                                </div>
+                                <div class="col-md-6">
+                                    
+                                </div>
+                            </div>
+                            <button class="mt-2 add_more_time_schedule">+ Add more</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary add_membership">Add Membership</button>
                 </div>
             </form>
@@ -142,7 +157,7 @@
     </div>
 </div>
 <!-- Edit Membership Modal -->
-<div class="modal fade" id="editMembershipModal" tabindex="-1" aria-labelledby="editMembershipModalLabel" aria-hidden="true">
+<div class="modal fade" id="editMembershipModal" tabindex="-1" aria-labelledby="editMembershipModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" style="width:100%;">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -202,9 +217,24 @@
                             name="is_transferable">&nbsp;&nbsp;&nbsp;Enable Transfer
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-6 mt-4">
+                            <input type="checkbox" class="form-check-input" id="is_edit_time_schedule_required" style="border: 2px solid #ccc;" name="is_edit_time_schedule_required">&nbsp;&nbsp;&nbsp;Time Schedule
+                        </div>
+                        <div class="col-md-6 mt-4 time_schedule_edit d-none" style="height:150px; overflow-y: scroll;">
+                            <div class="row" id="time_schedule_edit_div_1">
+                                <div class="col-md-6">
+                                    <input type="time" style="width:100%;" class="form-control" id="time_schedule_edit_1" name="time_schedules_edit[]">
+                                </div>
+                                <div class="col-md-6">
+                                    
+                                </div>
+                            </div>
+                            <button class="mt-2 add_more_time_schedule_edit">+ Add more</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary edit_membership">Save Changes</button>
                 </div>
             </form>

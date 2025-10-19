@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('emergency_contact_phone')->nullable();
             $table->integer('membership_type')->default(1);
             $table->date('membership_start_date')->nullable();
+            $table->time('membership_schedule_time')->nullable();
             $table->date('membership_end_date')->nullable();
             $table->float('discount')->default(0);
             $table->string('profile_picture')->nullable();

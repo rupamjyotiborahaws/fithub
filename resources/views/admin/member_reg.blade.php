@@ -36,7 +36,7 @@
     <div class="row">
         <div class="col-md-9">
             {{-- New Member Registration --}}
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
+            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
                 <h5 style="margin:0 0 12px;" class="font-semibold mb-4">New Member Registration</h5>
                 <form method="POST" action="" autocomplete="on">
                     @csrf
@@ -88,20 +88,6 @@
                         </div>
                     </div>
                     <div class="row">
-                        <!-- <div class="col-md-4 col-lg-4 col-sm-12 col-sx-12">
-                            <div class="mb-2">
-                                <label>Height</label>
-                                <input type="text" name="height" value="{{ old('height') }}" class="w-100">
-                            </div>   
-                        </div>
-                        <div class="col-md-4 col-lg-4 col-sm-12 col-sx-12">
-                            <div class="mb-2">
-                                <label>Weight</label>
-                                <input type="text" name="weight" value="{{ old('weight') }}" class="w-100">
-                            </div>   
-                        </div> -->
-                    </div>
-                    <div class="row">
                         <div class="col-md-6 col-lg-6 col-sm-12 col-sx-12">
                             <div class="mb-2">
                                 <label>Fitness Goals</label>
@@ -150,6 +136,16 @@
                     </div>
                     <div class="row mt-3 mb-3">
                         <div class="col-md-12 col-lg-12 col-sm-12 col-sx-12">
+                            <div class="mb-2 time_schedules_container_display d-none">
+                                <label id="one_time_amount_label">Time Schedules</label>
+                                <div class="time_schedules_container">
+                                      
+                                </div>    
+                            </div>   
+                        </div>
+                    </div>
+                    <div class="row mt-3 mb-3">
+                        <div class="col-md-12 col-lg-12 col-sm-12 col-sx-12">
                             <div class="mb-2 one_time_single d-none">
                                 <label id="one_time_amount_label">Amount to be paid (At a time)</label>
                                 <input type="text" id="one_time_amount_label" class="one_time_amount" name="one_time_amount" value="" required class="w-100">&nbsp;&nbsp;&nbsp;
@@ -178,7 +174,7 @@
         </div>
         <div class="col-md-3">
             {{-- Search Members --}}
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; margin-bottom:10px;">
+            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; margin-bottom:10px;">
                 <div style="height:50px;">
                     <input type="text" id="memberSearch" placeholder="Search Members..." class="w-100 mb-4">
                 </div>
@@ -187,7 +183,7 @@
                 </div>
             </div>
             {{-- Recent Members --}}
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
+            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
                 <h5 style="margin:0 0 12px;">Recent Members</h5>
                 <div style="max-height:300px;overflow:auto;">
                     <table class="table" style="width:100%;border-collapse:collapse;">
@@ -216,7 +212,9 @@
 <script>
     const allMembers = @json($allMembers ?? []);
     const membershipData = @json($memberships ?? []);
+    const membershipTimeSchedule = @json($MembershipTimeSchedule ?? []);
     console.log('All Members:', allMembers);
     console.log('Membership Data:', membershipData);
+    console.log('Membership Time Schedule:', membershipTimeSchedule);
 </script>
 @endsection

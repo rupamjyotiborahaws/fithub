@@ -10,3 +10,118 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+/* Responsive Navigation Styles */
+@media (max-width: 767px) {
+    .navbar-brand {
+        font-size: 1.1rem !important;
+    }
+    
+    #mobile-menu {
+        max-height: calc(100vh - 4rem);
+        overflow-y: auto;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .mobile-dropdown-item {
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .mobile-dropdown-item:hover {
+        background-color: #f8fafc;
+        transform: translateX(2px);
+    }
+
+    /* Mobile navigation links styling */
+    #mobile-menu a, #mobile-menu button {
+        font-size: 0.95rem;
+        transition: all 0.2s ease-in-out;
+    }
+
+    #mobile-menu .space-y-1 > a:hover,
+    #mobile-menu .space-y-1 > button:hover {
+        background-color: #f3f4f6 !important;
+        color: #4f46e5 !important;
+    }
+}
+
+/* Smooth transitions for dropdowns */
+.sub-menu {
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.sub-menu.hidden {
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+}
+
+.sub-menu:not(.hidden) {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* Mobile menu transitions */
+#mobile-menu {
+    transition: all 0.3s ease-in-out;
+}
+
+#mobile-menu.hidden {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+#mobile-menu:not(.hidden) {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Icon transitions */
+#hamburger-icon, #close-icon {
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* Arrow transitions */
+svg {
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Ensure proper z-index for dropdowns */
+.sub-menu {
+    z-index: 1000;
+}
+
+#mobile-menu {
+    z-index: 999;
+}
+
+.login_btn {
+    background-color: white;
+    color: #007bff;
+    padding: 10px 20px;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 40%;
+}
+.login_btn:hover {
+    background-color: #007bff;
+    color: white;
+}
+.login_input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+/* Hide scrollbars in Chrome, Safari and other WebKit browsers */
+.hide-scrollbar {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;  /* Safari and Chrome */
+}

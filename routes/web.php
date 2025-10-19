@@ -20,6 +20,7 @@ Route::middleware(['check_authentication', 'client_settings'])->group(function (
     Route::get('client', [AdminController::class, 'getClient'])->name('get_client');
     Route::get('memberships', [AdminController::class, 'getMemberships'])->name('get_memberships');
     Route::get('fee_collection', [AdminController::class, 'feeCollection'])->name('get_fee_collection');
+    Route::get('fee_collections', [AdminController::class, 'feeCollections'])->name('get_fee_collections');
     Route::get('config', [AdminController::class, 'getConfig'])->name('get_config');
     Route::get('monthly/receipt/download/{id}/{membershipId}', [AdminController::class, 'downloadReceipt'])->name('receipt.download');
     Route::get('onetime/receipt/download/{id}/{membershipId}', [AdminController::class, 'downloadOneTimeReceipt'])->name('one_time_receipt.download');

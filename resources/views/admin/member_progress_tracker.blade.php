@@ -6,7 +6,7 @@
 <div class="container-fluid mx-auto py-6" style="min-height: 75vh;">
     <div class="row">
         <div class="col-md-9 col-lg-9 col-sm-12 col-xs-12">
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 700px; overflow: scroll;">
+            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 700px; overflow: scroll;">
                 <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Progress Record Entry for Members</h5>
                 <table id="health_rec_basic_table" style="border-collapse:collapse; width:100%; margin-bottom:1.25rem; border:1px solid #ddd;">
                     <thead>
@@ -49,7 +49,7 @@
                     
                 </div>
             </div>
-            <div class="card mt-2" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; overflow: scroll;">
+            <div class="card mt-2 hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; overflow: scroll;">
                 <div>
                     <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Instructions</h5>
                     <ul class="instructions_list_fee_collection">
@@ -147,18 +147,18 @@
 <!-- Member Progress Chart Display Modal -->
 <div class="modal fade" id="progressChartDisplayModal" tabindex="-1" aria-labelledby="progressChartDisplayModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" style="width:100%; margin-left: -150px;">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content" style="width: 1200px; height: 800px; overflow: scroll;">
+        <div class="modal-content hide-scrollbar" style="width: 1200px; height: 800px; overflow: scroll;">
             <div class="modal-header">
                 <h5 class="modal-title" id="progressChartDisplayModalLabel">Progress of <button id="memberName" class="progress_chart_member_name"></button>
                     <strong><span id="memberName" style="font-weight: bold;"></span></strong></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div id="progressChartContainer" style="width: 1100px; height: 600px; overflow: scroll;">
+                <div id="progressChartContainer" class="hide-scrollbar" style="width: 1100px; height: 600px; overflow-x: scroll;">
                     <!-- Progress chart content will be loaded here via AJAX -->
                      <canvas id="progressChartCanvasId" width="900" height="500"></canvas>
                 </div>
-                <div id="progressMatricContainer" style="width: 1100px; overflow: scroll; text-align:center;">
+                <div id="progressMatricContainer" class="hide-scrollbar" style="width: 1100px; overflow-x: scroll; text-align:center;">
                     <input type="hidden" name="member_id" value="" />
                     <input type="radio" class="progress_matric" name="progress_matric" value="Weight" checked>&nbsp;Weight&nbsp;&nbsp;
                     <input type="radio" class="progress_matric" name="progress_matric" value="Height">&nbsp;Height&nbsp;&nbsp;

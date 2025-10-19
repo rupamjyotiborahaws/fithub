@@ -15,6 +15,7 @@ use App\Models\Config;
 use App\Models\Attendance;
 use App\Models\Trainer;
 use App\Models\MemberTrainer;
+use App\Models\MembershipTimeSchedule;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -30,6 +31,7 @@ class AdminController extends Controller
     {
         $client_settings = $request->client_settings;
         $memberships = Membership::all();
+        $MembershipTimeSchedule = MembershipTimeSchedule::all();
         $allMembers = User::where(['isAdmin' => 0])->select('id','name')->get();
         $recentMembers = User::where(['isAdmin' => 0])
                           ->join('memberdetails', 'users.id', '=', 'memberdetails.user_id')
@@ -37,7 +39,7 @@ class AdminController extends Controller
                           ->orderBy('users.created_at', 'desc')
                           ->take(10)
                           ->get();
-        return view('admin.member_reg', compact('memberships', 'recentMembers', 'client_settings', 'allMembers'));
+        return view('admin.member_reg', compact('memberships', 'recentMembers', 'client_settings', 'allMembers', 'MembershipTimeSchedule'));
     }
 
     public function trainerRegistration(Request $request)
@@ -228,6 +230,7 @@ class AdminController extends Controller
     }
 
     public function registerMember(Request $request) {
+        \Log::info($request->all());
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -235,8 +238,6 @@ class AdminController extends Controller
             'phone' => 'required|string|max:10',
             'dob' => 'required|date',
             'gender' => 'required|string|in:m,f,o',
-            // 'height' => 'nullable|numeric',
-            // 'weight' => 'nullable|numeric',
             'membership_type' => 'required|exists:memberships,id',
             'membership_start_date' => 'required|date',
             'emergency_contact_name' => 'nullable|string|max:255',
@@ -260,6 +261,9 @@ class AdminController extends Controller
             $dob = Carbon::parse($request->dob);
             $age = $dob->diffInYears(Carbon::now());
 
+            // Get Schedule time from DB
+            $time_of_schedule = MembershipTimeSchedule::where('id', $request->time_schedule)->first();
+
             $memberDetail = new MemberDetail();
             $memberDetail->user_id = $user->id;
             $memberDetail->dob = $request->dob;
@@ -270,6 +274,9 @@ class AdminController extends Controller
             $memberDetail->membership_end_date = $membership_end_date;
             $memberDetail->emergency_contact_name = $request->emergency_contact_name;
             $memberDetail->emergency_contact_phone = $request->emergency_contact_phone;
+            $memberDetail->fitness_goals = $request->fitness_goals ?? '';
+            $memberDetail->medical_conditions = $request->medical_conditions ?? '';
+            $memberDetail->membership_schedule_time = $time_of_schedule['start_time'] ?? null;
             $memberDetail->save();
 
             $membership_info = Membership::where(['id' => $request->membership_type])->first();
@@ -385,7 +392,11 @@ class AdminController extends Controller
 
     public function getMemberships(Request $request) {
         $client_settings = $request->client_settings;
-        $memberships = Membership::all();
+        $memberships = Membership::join('membership_time_schedules', 'memberships.id', '=', 'membership_time_schedules.membership_id', 'left')
+                        ->select('memberships.*', \DB::raw('GROUP_CONCAT(membership_time_schedules.start_time) as time_schedules'))
+                        ->groupBy('memberships.id')
+                        ->get();
+        \Log::info($memberships);
         return view('admin.membership', compact('memberships', 'client_settings'));
     }
 
@@ -403,6 +414,19 @@ class AdminController extends Controller
         $membership->is_transferable = $request->is_transferable ? true : false;
         $membership->save();
 
+        if($request->is_time_schedule_required) {
+            $time_schedules = (array)$request->time_schedules;
+            $time_schedules = array_filter($time_schedules); // Remove empty values
+            if(!empty($time_schedules)) {
+                MembershipTimeSchedule::where('membership_id', $membership->id)->delete(); // Clear existing schedules if any
+                foreach ($time_schedules as $time) {
+                    $schedule = new MembershipTimeSchedule();
+                    $schedule->membership_id = $membership->id;
+                    $schedule->start_time = $time;
+                    $schedule->save();
+                }
+            }
+        }
         return response()->json(['message' => 'Membership plan added successfully.', 'data' => $membership], 200);
     }
 
@@ -419,7 +443,20 @@ class AdminController extends Controller
         $membership->is_active = $request->is_active ? true : false;
         $membership->is_transferable = $request->is_transferable ? true : false;
         $membership->save();
-
+        if($request->is_edit_time_schedule_required) {
+            $time_schedules = (array)$request->time_schedules_edit;
+            $time_schedules = array_filter($time_schedules); // Remove empty values
+            \Log::info($time_schedules);
+            if(!empty($time_schedules)) {
+                MembershipTimeSchedule::where('membership_id', $membership->id)->delete(); // Clear existing schedules if any
+                foreach ($time_schedules as $time) {
+                    $schedule = new MembershipTimeSchedule();
+                    $schedule->membership_id = $membership->id;
+                    $schedule->start_time = $time;
+                    $schedule->save();
+                }
+            }
+        }
         return response()->json(['message' => 'Membership plan updated successfully.', 'data' => $membership], 200);
     }
 
@@ -529,6 +566,146 @@ class AdminController extends Controller
                                'fee_payment_schedule.for_month', 'fee_payment_schedule.due_date', 'fee_payment_schedule.amount', 'fee_payment_schedule.is_paid')
                       ->get();
         return view('admin.fee_collection', compact('client_settings', 'allMembers', 'memberships', 'members_fee'));    
+    }
+
+    public function feeCollections(Request $request) {
+        $client_settings = $request->client_settings;
+        $today = Carbon::now();
+        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        $current_month = $months[$today->month - 1]." ".$today->year;
+        $total_collections = FeePayment::whereMonth('payment_date', $today->month)
+                            ->whereYear('payment_date', $today->year)
+                            ->sum('amount');
+        $fee_months = [];
+        $data = [
+            'month' => [],
+            'membership' => [],
+            'total_amount' => []
+        ];
+        for($i=0; $i<=5; $i++) {
+            $monthDate = Carbon::now()->subMonths($i);
+            $monthName = $months[$monthDate->month - 1];
+            $yearName = $monthDate->year;
+            $fee_months[] = $monthName." ".$yearName;
+        }
+        $memberships = Membership::all();
+        $fee_payment_schedules = FeePaymentSchedule::where(['is_paid' => 1])->get();
+        \Log::info($fee_payment_schedules);
+        foreach ($fee_payment_schedules as $schedule) {
+            \Log::info("Processing schedule for month: ".$schedule->for_month." and membership: ".$schedule->membership_type);
+            if(isset($data['for_month']) && isset($data['membership']) && in_array($schedule->for_month, $data['for_month']) && in_array($schedule->membership_type, $data['for_month']['membership'])) {
+                \Log::info("Updating existing entry for month: ".$schedule->for_month." and membership: ".$schedule->membership_type);
+                $index = array_search($schedule->for_month, $data['for_month']['membership']);
+                $data['for_month']['total_amount'][$index] += $schedule->amount;
+            } else {
+                \Log::info("Adding new entry for month: ".$schedule->for_month." and membership: ".$schedule->membership_type);
+                $data['for_month'][] = $schedule->for_month;
+                $data['for_month']['membership'][] = $schedule->membership_type;
+                $data['for_month']['total_amount'][] = $schedule->amount;
+            }
+        }
+        \Log::info($data);
+        return view('admin.fee_collections', compact('client_settings','total_collections', 'current_month', 'fee_months', 'memberships', 'data'));
+    }
+
+    public function fetchFeeCollections(Request $request) {
+        $inputs = $request->all();
+        $inputs = $inputs['fee_collections_filter'];
+        \Log::info($inputs);
+        $selectedMonth = $inputs['fee_month'];
+        $selectedMembership = $inputs['membership_id'];
+        $selectedMonthParts = explode(' ', $selectedMonth);
+        if(count($selectedMonthParts) != 2) {
+            return response()->json(['message' => 'Invalid month format', 'status' => 'error'], 400);
+        }
+        // Get the Month Details in format YYYY-MM-DD
+        $monthName = $selectedMonthParts[0];
+        $year = $selectedMonthParts[1];
+        $months = ['Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04', 'May' => '05', 'Jun' => '06', 'Jul' => '07', 'Aug' => '08', 'Sep' => '09', 'Oct' => '10', 'Nov' => '11', 'Dec' => '12'];
+        $start_date = $year . '-' . ($months[$monthName] ?? '01') . '-01';
+        $end_date = date('Y-m-t', strtotime($start_date)); // Get last day of the month
+        
+        // If membership is selected in frontend
+        $data = [];
+        if($selectedMembership != -1 && $selectedMembership != 0) {
+            $result = FeePayment::whereBetween('payment_date', [$start_date, $end_date])
+                 ->join('fee_payment_schedule', 'fee_payment.id', '=', 'fee_payment_schedule.fee_payment_id')
+                 ->select('fee_payment_schedule.member_id as fee_member_id', 'fee_payment_schedule.amount as schedule_amount', 'fee_payment_schedule.membership_type')
+                 ->get();
+            $total_amount = 0;
+            $membership_details = Membership::where(['id' => $selectedMembership])->first();
+            $member_ids = [];
+            foreach ($result as $res) {
+                if($res->membership_type == $selectedMembership) {
+                    if($membership_details->payment_type == 'single') {
+                        if(in_array($res->fee_member_id, $member_ids)) {
+                            continue;
+                        }
+                        array_push($member_ids, $res->fee_member_id);
+                        $total_amount += $membership_details->one_time_fee;
+                    } else {
+                        $total_amount += $res->schedule_amount;
+                    }
+                }
+            }
+            $data = [
+                'label' => [$membership_details->type],
+                'values' => [$total_amount],
+                'membership' => $membership_details->type
+            ];
+            \Log::info($data);
+        } else if($selectedMembership == -1 || $selectedMembership == 0) {
+            $result = FeePayment::whereBetween('payment_date', [$start_date, $end_date])
+                 ->join('fee_payment_schedule', 'fee_payment.id', '=', 'fee_payment_schedule.fee_payment_id')
+                 ->select('fee_payment_schedule.member_id as fee_member_id', 'fee_payment_schedule.amount as schedule_amount', 'fee_payment_schedule.membership_type')
+                 ->get();
+            $member_ids = [];
+            foreach ($result as $key => $res) {
+                $membership_details = Membership::where(['id' => $res->membership_type])->first();
+                if($membership_details) {
+                    if(isset($data['label']) && in_array($membership_details->type, $data['label'])) {
+                        if($membership_details->payment_type == 'single') {
+                            if(in_array($res->fee_member_id, $member_ids)) {
+                                continue;
+                            }
+                            array_push($member_ids, $res->fee_member_id);
+                            $index = array_search($membership_details->type, $data['label']);
+                            $data['values'][$index] += $membership_details->one_time_fee;
+                        } else {
+                            $index = array_search($membership_details->type, $data['label']);
+                            $data['values'][$index] += $res->schedule_amount;
+                        }
+                    } else {
+                        if($membership_details->payment_type == 'single') {
+                            array_push($member_ids, $res->fee_member_id);
+                            $data['label'][] = $membership_details->type;
+                            $data['values'][] = $membership_details->one_time_fee;
+                        } else {
+                            $data['label'][] = $membership_details->type;
+                            $data['values'][] = $res->schedule_amount;
+                        }
+                    }
+                }
+            }
+            if(!isset($data)) {
+                $data = [
+                    'label' => [],
+                    'values' => []
+                ];
+            }
+        }
+
+        // else if($selectedMembership == 0) {
+        //     $cash_fee_collections = FeePayment::whereBetween('payment_date', [$start_date, $end_date])->where(['payment_method' => 'cash'])->sum('amount');
+        //     $upi_fee_collections = FeePayment::whereBetween('payment_date', [$start_date, $end_date])->where(['payment_method' => 'upi'])->sum('amount');
+        //     $data = [
+        //         'label' => ['Cash', 'UPI'],
+        //         'values' => [$cash_fee_collections, $upi_fee_collections]
+        //     ];
+        // }
+
+        // Return the response
+        return response()->json($data);
     }
 
     public function getPaymentSchedule($member_id) {
@@ -777,12 +954,12 @@ class AdminController extends Controller
             $attendance = new Attendance();
             $attendance->member_id = $member_id;
             $attendance->attendance_date = $today;
-            $attendance->check_in_time = date('h:i');
+            $attendance->check_in_time = date('H:i');
             $attendance->status = 'present';
             $attendance->shift = $inputs['shift'];
             $attendance->save();
             return response()->json(['message' => 'Member checked in successfully.', 'status' => 'success', 
-                                    'check_in_time' => $attendance->check_in_time, 'shift' => $attendance->shift], 200);
+                                    'check_in_time' => date('h:i A', strtotime($attendance->check_in_time)), 'shift' => $attendance->shift], 200);
         }
     }
 

@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\AdminController;
 Route::get('registrations', [AdminController::class, 'registrations']);
 Route::get('current_month_fee_collections', [AdminController::class, 'currentMonthFeeCollection']);
 Route::get('recent_fee_collections', [AdminController::class, 'recentFeeCollections']);
+Route::get('fee_collections', [AdminController::class, 'fetchFeeCollections']);
 Route::post('register_member', [AdminController::class, 'registerMember']);
 Route::post('addupdate_client', [AdminController::class, 'addUpdateClient']);
 Route::post('add_membership', [AdminController::class, 'addMembership']);

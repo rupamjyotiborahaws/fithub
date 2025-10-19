@@ -21,7 +21,7 @@
 
     <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:1.5rem;">
         {{-- New Member Registration --}}
-        <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
+        <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
             <h2 style="margin:0 0 12px;">New Member Registration</h2>
             <form method="POST" action="" autocomplete="off">
                 @csrf
@@ -59,7 +59,7 @@
         </div>
 
         {{-- Fee Collection --}}
-        <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
+        <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
             <h2 style="margin:0 0 12px;">Fee Collection</h2>
             <form method="POST" action="">
                 @csrf
@@ -98,7 +98,7 @@
         </div>
 
         {{-- Recent Members --}}
-        <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
+        <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
             <h2 style="margin:0 0 12px;">Recent Members</h2>
             <div style="max-height:300px;overflow:auto;">
                 <table class="table" style="width:100%;border-collapse:collapse;">
@@ -125,7 +125,7 @@
         </div>
 
         {{-- Recent Payments --}}
-        <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
+        <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
             <h2 style="margin:0 0 12px;">Recent Payments</h2>
             <div style="max-height:300px;overflow:auto;">
                 <table class="table" style="width:100%;border-collapse:collapse;">
@@ -154,7 +154,7 @@
         </div>
 
         {{-- Summary --}}
-        <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
+        <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
             <h2 style="margin:0 0 12px;">Summary</h2>
             <ul style="list-style:none;padding:0;margin:0;">
                 <li style="padding:4px 0;">Total Members: <strong>{{ $stats['total_members'] ?? 0 }}</strong></li>

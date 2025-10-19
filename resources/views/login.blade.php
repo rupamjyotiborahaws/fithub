@@ -11,7 +11,7 @@
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
         <!-- Styles / Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite(['resources/css/app.css'])
     </head>
     <body>
         <div class="container-fluid flex items-center justify-center min-h-screen bg-gray-100">
@@ -30,12 +30,12 @@
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
                         <div class="mb-4">
-                            <input type="email" id="email" name="email" required class="w-full px-3 py-2 border rounded" placeholder="Email">
+                            <input type="email" id="email" name="email" required class="login_input" placeholder="Email">
                         </div>
                         <div class="mb-4">
-                            <input type="password" id="password" name="password" required class="w-full px-3 py-2 border rounded" placeholder="Password">
+                            <input type="password" id="password" name="password" required class="login_input" placeholder="Password">
                         </div>
-                        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Login</button>
+                        <button type="submit" class="login_btn">Login</button>
                     </form>
                 </div>
             </div>

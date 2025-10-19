@@ -7,7 +7,7 @@
     <div class="row">
         <div class="col-md-9 col-lg-9 col-sm-12 col-xs-12">
             {{-- Membership Settings --}}
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 725px; overflow: scroll;">
+            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 725px; overflow: scroll;">
                 <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Basic Details</h5>
                 <table id="attn_basic_table" style="border-collapse:collapse; width:100%; margin-bottom:1.25rem; border:1px solid #ddd;">
                     <thead>
@@ -28,7 +28,7 @@
                             <td style="padding:12px; border:1px solid #ddd;">{{ $member->phone_no }}</td>
                             <td style="padding:12px; border:1px solid #ddd;" id="attendance_action_{{ $member->id }}">
                                 @if($member->status == 'present')
-                                    <span style="color: green; font-weight: bold;">Checked In at {{ date('h:i', strtotime($member->check_in_time)) }} ({{ ucfirst($member->shift) }})</span>
+                                    <span style="color: green; font-weight: bold;">Checked In at {{ date('h:i A', strtotime($member->check_in_time)) }} ({{ ucfirst($member->shift) }})</span>
                                 @else
                                     <button class="mark_attendance" data-id="{{ $member->id }}">Check In</button>
                                 @endif
@@ -40,7 +40,7 @@
             </div>
         </div>
         <div class="col-md-3 col-lg-3 col-sm-12 col-xs-12">
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px; margin-bottom:10px;">
+            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px; margin-bottom:10px;">
                 <div>
                     <input type="text" id="memberSearchforAttendance" placeholder="Search Members..." 
                            class="w-100 mb-2 p-1 border rounded" style="border:1px solid #ccc; border-radius:4px; padding:4px;" />
@@ -49,7 +49,7 @@
                     
                 </div>
             </div>
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px; margin-bottom:10px;">
+            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px; margin-bottom:10px;">
                 <div>
                     <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Instructions</h5>
                     <ul>
@@ -59,7 +59,7 @@
                     </ul>
                 </div>
             </div>
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px; margin-bottom:10px;">
+            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px; margin-bottom:10px;">
                 <div>
                     <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Attendance Overview for today</h5>
                     <div id="attendance_overview" style="height: 350px;">
@@ -71,8 +71,7 @@
     </div>
 </div>
 <!-- Attendance Report Modal -->
-<div class="modal fade" id="attendanceReportModal" tabindex="-1" aria-labelledby="attendanceReportModalLabel" aria-hidden="true" 
-    data-bs-backdrop="static" data-bs-keyboard="false" style="width:100%;">
+<div class="modal fade" id="attendanceReportModal" tabindex="-1" aria-labelledby="attendanceReportModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" style="width:100%;">
     <div class="modal-dialog modal-lg">
         <div class="modal-content" style="width: 1000px; height: 700px; overflow: scroll;">
             <div class="modal-header">

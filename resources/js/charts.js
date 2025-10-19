@@ -354,3 +354,88 @@ export function renderMemberProgressChart(canvasId, measure_dates, measurement_v
     return null;
   }
 }
+
+export function renderFeeCollectionsChart(canvasId, labels, values, filter) {
+  let x_title = '';
+  if(filter.membership_id == 0) {
+    x_title = 'Payment Type';
+  } else if(filter.membership_id == -1) {
+    x_title = 'All Memberships';
+  } else if(filter.membership_id != 0 && filter.membership_id != -1) {
+    x_title = 'Membership Type';
+  }
+  const ctx = document.getElementById(canvasId);
+  return new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Fee Collection',
+        data: values,
+        borderWidth: 1
+      }]
+    },
+    options: { 
+      responsive: true, 
+      maintainAspectRatio: false,
+      plugins: {
+          title: { 
+            display: true, 
+            text: `Fee Collection for the month of ${filter.fee_month}`,
+            font: {
+              size: 16,
+              weight: 'bold'
+            }
+          },
+          legend: { 
+            display: true, 
+            position: 'top' 
+          }
+      },
+      // plugins: {
+      //   legend: {
+      //     display: true
+      //   }
+      // },
+      scales: {
+        x: { 
+          display: true, 
+          title: { 
+            display: true, 
+            text: `${x_title}`,
+            font: {
+              weight: 'bold'
+            }
+          },
+          grid: {
+            display: true,
+            color: 'rgba(0, 0, 0, 0.1)'
+          },
+          ticks: {
+            padding: 10
+          },
+          offset: true,
+          bounds: 'data'
+        },
+        y: { 
+          display: true, 
+          beginAtZero: true,
+          title: { 
+            display: true, 
+            text: 'Total Amount',
+            font: {
+              weight: 'bold'
+            }
+          },
+          grid: {
+            display: true,
+            color: 'rgba(0, 0, 0, 0.1)'
+          },
+          ticks: {
+            padding: 10
+          }
+        }
+      }
+    }
+  });
+}

@@ -7,7 +7,7 @@
     <div class="row">
         <div class="col-md-12">
             {{-- Membership Settings --}}
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 700px; overflow: scroll;">
+            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 700px; overflow: scroll;">
                 <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Basic Details</h5>
                 <table id="memberBasicTable" style="border-collapse:collapse; width:100%; margin-bottom:1.25rem; border:1px solid #ddd;">
                     <thead>
@@ -77,6 +77,7 @@
                     <thead>
                         <tr style="background-color:#f8f9fa;">
                             <th style="text-align:left; padding:12px; border:1px solid #ddd; width:20%; font-weight:600; background-color:#e9ecef;">Membership Plan</th>
+                            <th style="text-align:left; padding:12px; border:1px solid #ddd; width:20%; font-weight:600; background-color:#e9ecef;">Scheduled Time</th>
                             <th style="text-align:left; padding:12px; border:1px solid #ddd; width:20%; font-weight:600; background-color:#e9ecef;">Membership Start Date</th>
                             <th style="text-align:left; padding:12px; border:1px solid #ddd; width:10%; font-weight:600; background-color:#e9ecef;">Membership End Date</th>
                             <th style="text-align:left; padding:12px; border:1px solid #ddd; width:10%; font-weight:600; background-color:#e9ecef;">Discount</th>
@@ -85,6 +86,7 @@
                     <tbody>
                         <tr style="background-color:#ffffff;">
                             <td style="padding:12px; border:1px solid #ddd;">{{ $memberDetail->membership_type_name }}</td>
+                            <td style="padding:12px; border:1px solid #ddd;"><input type="time" value="{{ $memberDetail->membership_schedule_time }}" disabled></td>
                             <td style="padding:12px; border:1px solid #ddd;">{{ date('d-m-Y', strtotime($memberDetail->membership_start_date)) }}</td>
                             <td style="padding:12px; border:1px solid #ddd;">{{ date('d-m-Y', strtotime($memberDetail->membership_end_date)) }}</td>
                             <td style="padding:12px; border:1px solid #ddd;">{{ $memberDetail->discount == "" ? "NA" : $memberDetail->discount }}</td>
