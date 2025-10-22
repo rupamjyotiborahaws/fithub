@@ -35,7 +35,7 @@
                         <div class="mb-4">
                             <input type="password" id="password" name="password" required class="login_input" placeholder="Password">
                         </div>
-                        <button type="submit" class="login_btn">Admin Login</button>
+                        <button type="submit" class="login_btn">Login</button>
                     </form>
                 </div>
             </div>
