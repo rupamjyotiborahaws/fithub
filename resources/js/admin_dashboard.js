@@ -1,3 +1,13 @@
+import $ from 'jquery';
+window.$ = $;
+window.jQuery = $;
+
+import toastr from 'toastr';
+window.toastr = toastr;
+
+// Optionally import Toastr CSS too
+import 'toastr/build/toastr.min.css';
+
 $(document).ready(function() {
         $("#loader").hide();
         let selectedPayments = [];

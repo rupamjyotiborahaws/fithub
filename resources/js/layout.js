@@ -1,3 +1,6 @@
+import $ from 'jquery';
+window.$ = $;
+window.jQuery = $;
 document.addEventListener('DOMContentLoaded', function() {
     // Desktop dropdown elements
     const settingsButton = document.getElementById('settings-button');

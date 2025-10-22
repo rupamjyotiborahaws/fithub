@@ -18,6 +18,8 @@
         "@popperjs/core": "^2.11.8",
         "@selectize/selectize": "^0.15.2",
         "bootstrap": "^5.3.8",
-        "chart.js": "^4.5.0"
+        "chart.js": "^4.5.0",
+        "jquery": "^3.7.1",
+        "toastr": "^2.1.4"
     }
 }
