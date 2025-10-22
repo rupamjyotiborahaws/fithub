@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->integer('age')->nullable();
             $table->enum('gender', ['m', 'f', 'o'])->nullable();
-            $table->date('dob')->default('0000-00-00');
+            $table->date('dob')->nullable();
             $table->text('fitness_goals')->nullable();
             $table->text('medical_conditions')->nullable();
             $table->string('emergency_contact_name')->nullable();
