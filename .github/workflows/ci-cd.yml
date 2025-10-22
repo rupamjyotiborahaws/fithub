@@ -23,5 +23,3 @@ jobs:
             cd /var/www/html/fithub
             git pull origin main
             php artisan migrate --force
-            php artisan cache:clear
-            php artisan config:cache
