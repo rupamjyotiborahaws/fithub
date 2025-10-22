@@ -125,3 +125,11 @@ svg {
 .hide-scrollbar::-webkit-scrollbar {
     display: none;  /* Safari and Chrome */
 }
+
+@media (max-width: 420px) {
+    .login_btn {
+        padding: 10px 20px;
+        margin-left: 35%;
+        position: relative;
+    }
+}

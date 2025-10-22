@@ -147,9 +147,15 @@
                     <div class="row mt-3 mb-3">
                         <div class="col-md-12 col-lg-12 col-sm-12 col-sx-12">
                             <div class="mb-2 one_time_single d-none">
-                                <label id="one_time_amount_label">Amount to be paid (At a time)</label>
-                                <input type="text" id="one_time_amount_label" class="one_time_amount" name="one_time_amount" value="" required class="w-100">&nbsp;&nbsp;&nbsp;
-                                <input type="checkbox" id="confirm_one_time_fee_payment" name="confirm_one_time_fee_payment"> <label>I confirm that the fee amount has been collected.</label>
+                                <div class="row">
+                                    <div class="col-md-6 col-lg-6 col-sm-12 col-sx-12">
+                                        <label id="one_time_amount_label">Amount to be paid (At a time)</label>
+                                        <input type="text" id="one_time_amount_label" class="one_time_amount" name="one_time_amount" value="" required class="w-100">&nbsp;&nbsp;&nbsp;
+                                    </div>
+                                    <div class="col-md-6 col-lg-6 col-sm-12 col-sx-12 payment_con">
+                                        <input type="checkbox" id="confirm_one_time_fee_payment" name="confirm_one_time_fee_payment"> I confirm that the fee amount has been collected.
+                                    </div>
+                                </div>
                             </div>   
                         </div>
                     </div>
@@ -163,7 +169,7 @@
                                 <option value="upi">UPI</option>
                             </select>      
                         </div>
-                        <div class="col-md-6 col-lg-6 col-sm-12 col-sx-12">
+                        <div class="col-md-6 col-lg-6 col-sm-12 col-sx-12 upi_transaction">
                             <label for="transactionId" class="form-label">UPI Transaction ID</label>
                             <input type="text" class="form-control" id="transactionId" name="transaction_id">      
                         </div>
@@ -174,7 +180,7 @@
         </div>
         <div class="col-md-3">
             {{-- Search Members --}}
-            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; margin-bottom:10px;">
+            <div class="card hide-scrollbar member_search_card">
                 <div style="height:50px;">
                     <input type="text" id="memberSearch" placeholder="Search Members..." class="w-100 mb-4">
                 </div>
@@ -213,8 +219,5 @@
     const allMembers = @json($allMembers ?? []);
     const membershipData = @json($memberships ?? []);
     const membershipTimeSchedule = @json($MembershipTimeSchedule ?? []);
-    console.log('All Members:', allMembers);
-    console.log('Membership Data:', membershipData);
-    console.log('Membership Time Schedule:', membershipTimeSchedule);
 </script>
 @endsection

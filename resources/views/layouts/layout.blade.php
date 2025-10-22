@@ -22,7 +22,8 @@
     {{-- Styles --}}
     @vite(['resources/css/app.css',
             'resources/css/admin.css',
-            'resources/css/toastr.css'
+            'resources/css/toastr.css',
+            'resources/css/mobile.css'
     ])
     {{-- Scripts --}}
     @vite(['resources/js/app.js',

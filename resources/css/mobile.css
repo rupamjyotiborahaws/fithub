@@ -1,0 +1,61 @@
+@media (max-width: 420px) {
+    .member_search_card {
+        margin-top: 10px;
+    }
+    .payment_con {
+        margin-top: 15px;
+    }
+    #confirm_one_time_fee_payment {
+        transform: scale(1);
+    }
+    .upi_transaction {
+        margin-top: 15px;
+    }
+    .schedule_time_selection {
+        width: 50%;
+    }
+    .instructions_mobile {
+        display: block;
+        margin-bottom: 15px;
+    }
+    .instructions_desktop {
+        display: none;
+    }
+    .add_health_record_btn {
+        font-size: 12px;
+        font-weight: normal;
+        padding: 5px 8px;
+        cursor: pointer;
+    }
+    .member_search_card_desktop {
+        display: none;
+    }
+    .member_search_card_mobile {
+        display: block;
+        margin-top: 15px;
+    }
+    #progressChartDisplayModal {
+        width:100%; 
+        margin-left: 0px;
+        overflow: scroll;
+    }
+    #progressChartDisplayModal .modal-content {
+        width: 650px; 
+        height: 550px; 
+        overflow: scroll;
+    }
+    #progressChartCanvasId {
+        width: 600px;
+        height: 400px;
+    }
+    #progressChartContainer {
+        width: 600px; 
+        height: 400px; 
+        overflow-x: scroll;
+    }
+    #progressMatricContainer {
+        width: 650px; 
+        overflow-x: scroll; 
+        text-align:center;
+    }
+}

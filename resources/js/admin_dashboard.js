@@ -398,20 +398,19 @@ $(document).ready(function() {
                         $('.one_time_single').addClass('d-none');
                         }
                         const membership_time_schedule = membershipTimeSchedule.filter(m => m.membership_id == selectedOption);
-                        console.log('Matched membership time schedule:', membership_time_schedule);
                         if(membership_time_schedule && membership_time_schedule.length > 0) {
                                 let scheduleInputs = ``;
                                 membership_time_schedule.forEach((schedule, index) => {
                                         let count = index + 1;
                                         scheduleInputs += `<div class="row mt-2" id="time_schedule_div_${count}">
-                                        <div class="col-md-3">
-                                                <input type="time" class="form-control" style="width:100%" id="time_schedule_date_${count}" value="${schedule.start_time}" disabled>
+                                        <div class="col-md-3 col-lg-3 col-sm-6 col-xs-6">
+                                                <input type="time" class="form-control schedule_time_selection" id="time_schedule_date_${count}" value="${schedule.start_time}" disabled>
                                         </div>
-                                        <div class="col-md-2">
+                                        <div class="col-md-3 col-lg-3 col-sm-6 col-xs-6">
                                                 <input type="radio" id="time_schedule_${count}" name="time_schedule" style="margin-top:12px; font-size:30px;" value="${schedule.id}">
                                         </div>
-                                        <div class="col-md-7">
-                                                
+                                        <div class="col-md-6 col-lg-6">
+
                                         </div></div>`;
                                 });
                                 $('.time_schedules_container').html(scheduleInputs);
