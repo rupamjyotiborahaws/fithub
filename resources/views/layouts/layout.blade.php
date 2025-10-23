@@ -65,7 +65,7 @@
                                         <a href="{{ route('member.registration') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">New Registration</a>
                                         <a href="{{ route('member.progress_tracker') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Progress Tracker</a>
                                         <a href="{{ route('member.allot_trainer') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Allot Trainer</a>
-                                        <a href="{{ route('member.transfer_membership') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Transfer Membership</a>
+                                        <!-- <a href="{{ route('member.transfer_membership') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Transfer Membership</a> -->
                                     </div>
                                 </div>
                             </div>
@@ -81,7 +81,7 @@
                                 {{-- Dropdown Menu --}}
                                 <div id="trainer-menu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 sub-menu hidden z-50">
                                     <div class="py-1">
-                                        <a href="{{ route('trainer.registration') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Add Trainer</a>
+                                        <a href="{{ route('trainer.registration') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">New Registration</a>
                                     </div>
                                 </div>
                             </div>
@@ -169,7 +169,7 @@
             </div>
 
             <!-- Mobile Navigation Menu -->
-            <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-200">
+            <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-200 mb-4">
                 <div class="px-4 pt-2 pb-3 space-y-1">
                     @auth
                         <!-- Dashboard -->
@@ -188,7 +188,7 @@
                                     <a href="{{ route('member.registration') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">New Registration</a>
                                     <a href="{{ route('member.progress_tracker') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Progress Tracker</a>
                                     <a href="{{ route('member.allot_trainer') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Allot Trainer</a>
-                                    <a href="{{ route('member.transfer_membership') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Transfer Membership</a>
+                                    <!-- <a href="{{ route('member.transfer_membership') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Transfer Membership</a> -->
                                 </div>
                             </div>
 
@@ -201,7 +201,7 @@
                                     </svg>
                                 </button>
                                 <div id="mobile-trainer-menu" class="hidden pl-6 space-y-1">
-                                    <a href="{{ route('trainer.registration') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Add Trainer</a>
+                                    <a href="{{ route('trainer.registration') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">New Registration</a>
                                 </div>
                             </div>
 
@@ -215,6 +215,7 @@
                                 </button>
                                 <div id="mobile-fee-menu" class="hidden pl-6 space-y-1">
                                     <a href="{{ route('get_fee_collection') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Fee Collect</a>
+                                    <a href="{{ route('get_fee_collections') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Collections</a>
                                 </div>
                             </div>
 
@@ -264,6 +265,7 @@
                 </div>
             </div>
         </div>
+        <hr>
         <!-- Loader -->
         <div id="loader" class="loader-overlay">
             <div class="loader"></div>

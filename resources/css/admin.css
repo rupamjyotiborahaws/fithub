@@ -74,6 +74,7 @@
     padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
+    float: right;
 }
 .register_trainer {
     background-color: white;
@@ -92,6 +93,8 @@
     padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
+    margin-bottom: 20px;
+    float: right;
 }
 .attn_report_btn {
     background-color: white;
@@ -164,6 +167,24 @@
     border-radius: 4px;
     cursor: pointer;
 }
+.add_membership {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.edit_membership {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
 .process_multiple_payment {
     background-color: white;
     color: #007bff;
@@ -181,6 +202,8 @@
     padding: 5px 10px;  
     border-radius: 4px;
     cursor: pointer;
+    margin-bottom: 10px;
+    float: left;
 }
 .progress_chart_member_name {
     background-color: #007bff;
@@ -275,6 +298,14 @@
 .show_fee_collection:hover{
     background-color: #FCFCFC;
 }
+.add_membership:hover {
+    background-color: #2341e7;
+    color: white;
+}
+.edit_membership:hover {
+    background-color: #2341e7;
+    color: white;
+}
 .member_search_card {
     background:#fff;
     border:1px solid #ddd;
@@ -293,6 +324,7 @@
 }
 .member_search_card_desktop {
     display: block;
+    background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px; overflow: scroll;
 }
 .member_search_card_mobile {
     display: none;
@@ -302,6 +334,15 @@
     margin-left: -150px;
 }
 #progressChartDisplayModal .modal-content {
+    width: 1200px; 
+    height: 800px; 
+    overflow: scroll;
+}
+#attendanceReportModal {
+    width:100%; 
+    margin-left: -150px;
+}
+#attendanceReportModal .modal-content {
     width: 1200px; 
     height: 800px; 
     overflow: scroll;
@@ -319,4 +360,76 @@
     width: 1100px; 
     overflow-x: scroll; 
     text-align:center;
+}
+.trainer_allot {
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:18px; 
+    overflow: scroll;
+}
+.fee_collection_thead_data {
+    text-align:left; 
+    padding:12px; 
+    border:1px solid #ddd; 
+    width:20%; 
+    font-weight:600; 
+    background-color:#e9ecef;
+}
+.fee_collection_tbody_data {
+    text-align:left; 
+    padding:12px; 
+    border:1px solid #ddd; 
+    width:20%; 
+}
+.fee_collection_filtered_table_thead_data {
+    border:1px solid #ddd; 
+    padding:8px; 
+    width:25%;
+}
+.fee_collection_filtered_table_tbody_data {
+    border:1px solid #ddd; 
+    padding:8px; 
+    width:25%;
+}
+.attendance_thead_data {
+    text-align:left; 
+    padding:12px; 
+    border:1px solid #ddd; 
+    width:25%; 
+}
+.attendance_tbody_data {
+    text-align:left; 
+    padding:12px; 
+    border:1px solid #ddd; 
+    width:25%; 
+}
+.check_in_display_div {
+    color: green; 
+    font-weight: bold;
+}
+.individual_attendance_show {
+    border:1px solid #ddd; 
+    padding:8px;
+    width: 25%;
+}
+#memberSearchforAttendanceReport {
+    width: 100%;
+}
+.payment_type {
+    margin-left: 20px;
+}
+#enable_transfer {
+    margin-left: 20px; 
+    border: 2px solid #ccc;
+}
+.input_schedule_time {
+    width: 100%;
+}
+.fee_schedule {
+    max-height: 1200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 12px;
 }

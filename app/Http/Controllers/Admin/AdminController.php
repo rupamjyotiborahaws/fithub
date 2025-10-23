@@ -589,23 +589,23 @@ class AdminController extends Controller
             $fee_months[] = $monthName." ".$yearName;
         }
         $memberships = Membership::all();
-        $fee_payment_schedules = FeePaymentSchedule::where(['is_paid' => 1])->get();
-        \Log::info($fee_payment_schedules);
-        foreach ($fee_payment_schedules as $schedule) {
-            \Log::info("Processing schedule for month: ".$schedule->for_month." and membership: ".$schedule->membership_type);
-            if(isset($data['for_month']) && isset($data['membership']) && in_array($schedule->for_month, $data['for_month']) && in_array($schedule->membership_type, $data['for_month']['membership'])) {
-                \Log::info("Updating existing entry for month: ".$schedule->for_month." and membership: ".$schedule->membership_type);
-                $index = array_search($schedule->for_month, $data['for_month']['membership']);
-                $data['for_month']['total_amount'][$index] += $schedule->amount;
-            } else {
-                \Log::info("Adding new entry for month: ".$schedule->for_month." and membership: ".$schedule->membership_type);
-                $data['for_month'][] = $schedule->for_month;
-                $data['for_month']['membership'][] = $schedule->membership_type;
-                $data['for_month']['total_amount'][] = $schedule->amount;
-            }
-        }
-        \Log::info($data);
-        return view('admin.fee_collections', compact('client_settings','total_collections', 'current_month', 'fee_months', 'memberships', 'data'));
+        // $fee_payment_schedules = FeePaymentSchedule::where(['is_paid' => 1])->get();
+        // \Log::info($fee_payment_schedules);
+        // foreach ($fee_payment_schedules as $schedule) {
+        //     //\Log::info("Processing schedule for month: ".$schedule->for_month." and membership: ".$schedule->membership_type);
+        //     if(isset($data['membership']) && isset($data['for_month']) && in_array($schedule->for_month, $data['for_month']) && in_array($schedule->membership_type, $data['membership'])) {
+        //         \Log::info("Updating existing entry for month: ".$schedule->for_month." and membership: ".$schedule->membership_type);
+        //         $index = array_search($schedule->for_month, $data['for_month']);
+        //         $data['total_amount'][$index] += $schedule->amount;
+        //     } else {
+        //         //\Log::info("Adding new entry for month: ".$schedule->for_month." and membership: ".$schedule->membership_type);
+        //         $data['membership'][] = $schedule->membership_type;
+        //         $data['for_month'][] = $schedule->for_month;
+        //         $data['total_amount'][] = $schedule->amount;
+        //     }
+        // }
+        // \Log::info($data);
+        return view('admin.fee_collections', compact('client_settings','total_collections', 'current_month', 'fee_months', 'memberships'));
     }
 
     public function fetchFeeCollections(Request $request) {

@@ -126,10 +126,10 @@ svg {
     display: none;  /* Safari and Chrome */
 }
 
-@media (max-width: 420px) {
+@media (max-width: 480px) {
     .login_btn {
         padding: 10px 20px;
-        margin-left: 35%;
+        margin-left: 38%;
         position: relative;
     }
 }

@@ -1,4 +1,4 @@
-@media (max-width: 420px) {
+@media (max-width: 480px) {
     .member_search_card {
         margin-top: 10px;
     }
@@ -33,6 +33,7 @@
     .member_search_card_mobile {
         display: block;
         margin-top: 15px;
+        background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px; overflow: scroll;
     }
     #progressChartDisplayModal {
         width:100%; 
@@ -57,5 +58,84 @@
         width: 650px; 
         overflow-x: scroll; 
         text-align:center;
+    }
+    .fee_collection_data_div {
+        margin-top: 15px;
+    }
+    #fee_collection_table_head {
+        font-size: 15px;
+        font-weight: normal;
+    }
+    .fee_collection_thead_data {
+        font-size: 15px;
+        text-align:left; 
+        padding:6px; 
+        font-weight:500;
+    }
+    .fee_collection_tbody_data {
+        font-size: 15px;
+        text-align:left; 
+        padding:6px; 
+    }
+    .member_fee_month {
+        padding: 2px 6px;  
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .attendance_overview_chart {
+        margin-top: 15px;
+    }
+    .attendance_thead_data {
+        padding:6px;
+        font-size: 15px; 
+    }
+    .attendance_tbody_data {
+        padding:6px;
+        font-size: 15px;
+        font-weight: normal; 
+    }
+    .mark_attendance {
+        font-weight: normal;
+        padding: 5px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .check_in_display_div {
+        font-size: 13px;
+        font-weight: normal;
+    }
+    #attendanceReportModal {
+        width:100%; 
+        margin-left: 0px;
+        overflow: scroll;
+    }
+    #attendanceReportModal .modal-content {
+        width: 430px; 
+        height: 750px; 
+        overflow: scroll;
+    }
+    .individual_attendance_show { 
+        padding:3px;
+    }
+    #attendanceReportModalLabel {
+        font-size: 18px;
+        font-weight: normal;
+    }
+    .attn_report_heading {
+        font-size: 17px;
+        font-weight: normal;
+    }
+    .payment_type {
+        margin-left: 0px;
+    }
+    .benefits_row {
+        margin-top: 15px;
+    }
+    #enable_transfer {
+        margin-left: 0px;
+    }
+    .input_schedule_time {
+        width: 60%;
     }
 }

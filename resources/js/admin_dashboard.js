@@ -409,7 +409,7 @@ $(document).ready(function() {
                                         <div class="col-md-3 col-lg-3 col-sm-6 col-xs-6">
                                                 <input type="radio" id="time_schedule_${count}" name="time_schedule" style="margin-top:12px; font-size:30px;" value="${schedule.id}">
                                         </div>
-                                        <div class="col-md-6 col-lg-6">
+                                        <div class="col-md-6 col-lg-6 col-sm-4 col-xs-4">
 
                                         </div></div>`;
                                 });
@@ -702,7 +702,7 @@ $(document).ready(function() {
                 count++;
                 const newInput = `<div class="row mt-2" id="time_schedule_div_${count}">
                         <div class="col-md-6">
-                        <input type="time" style="width:100%;" class="form-control" id="time_schedule_${count}" name="time_schedules[]">
+                                <input type="time" class="form-control input_schedule_time" id="time_schedule_${count}" name="time_schedules[]">
                         </div>
                         <div class="col-md-6">
                                 <a class="mt-1 remove_time_schedule" style="text-decoration:none; float:left;" data-id="time_schedule_div_${count}">X</a>
@@ -853,14 +853,14 @@ $(document).ready(function() {
                                         $('#memberSearchFeeCollection').val('');
                                         const scheduleContainer = $('.fee_schedule');
                                         scheduleContainer.empty();
-                                        let scheduleHtml = `<h5>Payment Schedule for <b>${response.data.membername}</b></h5><h6 style="color:red;">Check the boxes to pay fee</h6>`;
+                                        let scheduleHtml = `<h5 class="attn_report_heading">Payment Schedule for <b>${response.data.membername}</b></h5><h6 style="color:red;">Check the boxes to pay fee</h6>`;
                                         scheduleHtml += `<table style="width:100%; border-collapse:collapse; margin-top:12px;">
                                                 <thead>
                                                         <tr>
-                                                                <th style="border:1px solid #ddd; padding:8px;">For the Month</th>
-                                                                <th style="border:1px solid #ddd; padding:8px;">Due Date</th>
-                                                                <th style="border:1px solid #ddd; padding:8px;">Amount</th>
-                                                                <th style="border:1px solid #ddd; padding:8px; text-align:center;">Status</th>
+                                                                <th class="fee_collection_filtered_table_thead_data">Month</th>
+                                                                <th class="fee_collection_filtered_table_thead_data">Due Date</th>
+                                                                <th class="fee_collection_filtered_table_thead_data">Amount</th>
+                                                                <th class="fee_collection_filtered_table_thead_data" style="text-align:center;">Status</th>
                                                         </tr>
                                                 </thead>
                                                 <tbody>`;
@@ -868,14 +868,14 @@ $(document).ready(function() {
                                                 //const dueDate = new Date(item.due_date);
                                                 let color = item.is_paid ? 'green' : 'red';
                                                 scheduleHtml += `<tr>
-                                                        <td style="border:1px solid #ddd; padding:8px;">${item.for_month}</td>
-                                                        <td style="border:1px solid #ddd; padding:8px;">${item.due_date}</td>
-                                                        <td style="border:1px solid #ddd; padding:8px;">${item.amount}</td>`;
+                                                        <td class="fee_collection_filtered_table_tbody_data">${item.for_month}</td>
+                                                        <td class="fee_collection_filtered_table_tbody_data">${item.due_date}</td>
+                                                        <td class="fee_collection_filtered_table_tbody_data">${item.amount}</td>`;
                                                         if(response.data.membership.payment_type === 'single') {
-                                                                scheduleHtml += `<td style="border:1px solid #ddd; padding:8px; text-align:center; color:${color}; font-weight:bold;">
+                                                                scheduleHtml += `<td class="fee_collection_filtered_table_tbody_data" style="text-align:center; color:${color};">
                                                                 ${item.is_paid ? `Paid </a>` : 'N/A'}</td>`;
                                                         } else {
-                                                                scheduleHtml += `<td style="border:1px solid #ddd; padding:8px; text-align:center; color:${color}; font-weight:bold;">
+                                                                scheduleHtml += `<td class="fee_collection_filtered_table_tbody_data" style="text-align:center; color:${color};">
                                                                 ${item.is_paid ? `Paid &nbsp;&nbsp;&nbsp;<a href="${baseUrl}/monthly/receipt/download/${item.id}/${response.data.membership.id}" target="_blank" style="text-decoration:none; color:blue; cursor:pointer;">📄 Download Receipt</a>` : '<input type="checkbox" class="check_for_pay" name="payment[]" value="' + item.id + '">'}
                                                                 </td>`;
                                                         }
@@ -888,8 +888,8 @@ $(document).ready(function() {
                                                 <button class="btn btn-success mt-3 process_payment" style="margin-bottom: 10px;">📄 Download Receipt
                                                 </button></a>`;
                                         } else {
-                                                scheduleHtml += `<a href="${baseUrl}/fee_collection"><button class="mt-3 back_to_fee_collection" style="margin-bottom: 10px; float:left;">BACK</button></a>
-                                                <button class="mt-3 process_payment" style="margin-bottom: 10px; float:right;" data-bs-toggle="modal" data-bs-target="#feePaymentModal">Process Payment</button>`;
+                                                scheduleHtml += `<a href="${baseUrl}/fee_collection"><button class="mt-3 back_to_fee_collection">BACK</button></a>
+                                                <button class="mt-3 process_payment" data-bs-toggle="modal" data-bs-target="#feePaymentModal">Process Payment</button>`;
                                         }
                                         scheduleContainer.append(scheduleHtml);
                                 } else {
@@ -1161,7 +1161,7 @@ $(document).ready(function() {
                                         $('#attendance_action_'+memberId).html('');
                                         toastr.options.timeOut = 5000;
                                         toastr.success(response.message || "Configuration saved successfully");
-                                        $('#attendance_action_'+memberId).html('<span style="color: green; font-weight: bold;">Checked In at '+response.check_in_time+' ('+response.shift.charAt(0).toUpperCase() + response.shift.slice(1)+')</span>');
+                                        $('#attendance_action_'+memberId).html('<span class="check_in_display_div">Checked In at '+response.check_in_time+' ('+response.shift.charAt(0).toUpperCase() + response.shift.slice(1)+')</span>');
                                         // Update total_members_attn variable to reflect the change
                                         const memberIndex = total_members_attn.findIndex(m => m.id === memberId);
                                         if (memberIndex !== -1) {
@@ -1194,15 +1194,15 @@ $(document).ready(function() {
                         let tbody = '<tbody id="attn_basic_table_body">';
                         total_members_attn.forEach(member => {
                                 tbody += `<tr style="background-color:#ffffff;">
-                                        <td style="padding:12px; border:1px solid #ddd;">${member.id}</td>
-                                        <td style="padding:12px; border:1px solid #ddd;"><a href="#" style="text-decoration:none;" 
+                                        <td class="attendance_tbody_data">${member.id}</td>
+                                        <td class="attendance_tbody_data"><a href="#" style="text-decoration:none;" 
                                                 data-bs-toggle="modal" data-bs-target="#attendanceReportModal" data-member_id="${member.id}" data-member_name="${member.name}">${member.name}</a></td>
-                                        <td style="padding:12px; border:1px solid #ddd;">${member.phone_no}</td>
-                                        <td style="padding:12px; border:1px solid #ddd;" id="attendance_action_${member.id}">`;
+                                        <td class="attendance_tbody_data">${member.phone_no}</td>
+                                        <td class="attendance_tbody_data" id="attendance_action_${member.id}">`;
                                         if(member.status == 'present') {
-                                                tbody += `<span style="color: green; font-weight: bold;">Checked In at ${member.check_in_time} (${member.shift.charAt(0).toUpperCase() + member.shift.slice(1)})</span>`;
+                                                tbody += `<span class="check_in_display_div">Checked In at ${member.check_in_time} (${member.shift.charAt(0).toUpperCase() + member.shift.slice(1)})</span>`;
                                         } else {
-                                                tbody += `<button class="btn btn-primary mark_attendance" data-id="${member.id}">Mark Attendance</button>`;
+                                                tbody += `<button class="mark_attendance" data-id="${member.id}">Check In</button>`;
                                         }
                                         tbody += `</td>`;
                                 tbody += `</tr>`;
@@ -1218,15 +1218,15 @@ $(document).ready(function() {
                 let tbody = '<tbody id="attn_basic_table_body">';
                 matchedMembers.forEach(member => {
                         tbody += `<tr style="background-color:#ffffff;">
-                                <td style="padding:12px; border:1px solid #ddd;">${member.id}</td>
-                                <td style="padding:12px; border:1px solid #ddd;"><a href="#" style="text-decoration:none;" 
+                                <td class="attendance_tbody_data">${member.id}</td>
+                                <td class="attendance_tbody_data"><a href="#" style="text-decoration:none;" 
                                                 data-bs-toggle="modal" data-bs-target="#attendanceReportModal" data-member_id="${member.id}" data-member_name="${member.name}">${member.name}</a></td>
-                                <td style="padding:12px; border:1px solid #ddd;">${member.phone_no}</td>
-                                <td style="padding:12px; border:1px solid #ddd;" id="attendance_action_${member.id}">`;
+                                <td class="attendance_tbody_data">${member.phone_no}</td>
+                                <td class="attendance_tbody_data" id="attendance_action_${member.id}">`;
                                 if(member.status == 'present') {
-                                        tbody += `<span style="color: green; font-weight: bold;">Checked In at ${member.check_in_time} (${member.shift.charAt(0).toUpperCase() + member.shift.slice(1)})</span>`;
+                                        tbody += `<span class="check_in_display_div">Checked In at ${member.check_in_time} (${member.shift.charAt(0).toUpperCase() + member.shift.slice(1)})</span>`;
                                 } else {
-                                        tbody += `<button class="btn btn-primary mark_attendance" data-id="${member.id}">Mark Attendance</button>`;
+                                        tbody += `<button class="mark_attendance" data-id="${member.id}">Check In</button>`;
                                 }
                                 tbody += `</td>`;
                         tbody += `</tr>`;
@@ -1279,7 +1279,8 @@ $(document).ready(function() {
                                         const reportContainer = $('.attendance_report');
                                         reportContainer.empty();
                                         if(memberId.toLowerCase() == '' || memberId.toLowerCase() == 'all') {
-                                                let reportHtml = `<h5>Attendance Report for <b>All</b> members in the period ${from_date} to ${to_date}</h5>`;
+                                                let reportHtml = `<h5 class="attn_report_heading">Attendance Report for All members in the period ${from_date} to ${to_date}</h5>`;
+                                                reportHtml += `<div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px; margin-bottom:10px;">`;
                                                 // Process the attendance data structure from backend
                                                 // Backend returns: {memberId: {date: {id, name, status}}}
                                                 members.forEach(member => {
@@ -1329,10 +1330,12 @@ $(document).ready(function() {
                                                                 reportHtml += `</tbody></table>`;
                                                         });
                                                 });
+                                                reportHtml += `</div>`;
                                                 
                                                 reportContainer.append(reportHtml);        
                                         } else {
-                                                let reportHtml = `<h5>Attendance Report of <b>${response.member.name}</b></h5>`;
+                                                let reportHtml = `<h5 class="attn_report_heading">Attendance Report of ${response.member.name}</h5>`;
+                                                reportHtml += `<div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px; margin-bottom:10px;">`;
                                                 reportHtml += `<table style="width:100%; border-collapse:collapse; margin-top:12px;">
                                                         <thead>
                                                                 <tr>
@@ -1371,6 +1374,7 @@ $(document).ready(function() {
                                                 });
                                                 reportHtml += `</tbody></table>`;
                                                 reportHtml += `<p style="float:right; margin-right:150px; margin-top:20px;"><b>Present : <span style="color:green;">${p}</span><br /> Absent : <span style="color:red;">${a}</span><br /> Scheduled : <span style="color:orange;">${na}</span></b></p>`;
+                                                reportHtml += `</div>`;
                                                 reportContainer.append(reportHtml);
                                         }
                                 } else {
@@ -1527,10 +1531,10 @@ $(document).ready(function() {
                                         reportHtml += `<table style="width:100%; border-collapse:collapse; margin-top:12px;">
                                                 <thead>
                                                         <tr>
-                                                                <th style="border:1px solid #ddd; padding:8px;">Date</th>
-                                                                <th style="border:1px solid #ddd; padding:8px;">Check-In Time</th>
-                                                                <th style="border:1px solid #ddd; padding:8px;">Shift</th>
-                                                                <th style="border:1px solid #ddd; padding:8px;">Status</th>
+                                                                <th class="individual_attendance_show">Date</th>
+                                                                <th class="individual_attendance_show">Check-In</th>
+                                                                <th class="individual_attendance_show">Shift</th>
+                                                                <th class="individual_attendance_show">Status</th>
                                                         </tr>
                                                 </thead>
                                                 <tbody>`;

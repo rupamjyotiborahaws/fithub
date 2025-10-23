@@ -4,16 +4,6 @@
 
 @section('content')
 
-<style>
-    /* Custom styles for the fee collection page */
-    .fee_schedule {
-        height: 900px;
-        overflow-y: auto;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        padding: 12px;
-    }
-</style>
 @php
     use Carbon\Carbon;
     $currentMonth = Carbon::now()->format('M Y'); // Changed from 'Y-m' to
@@ -25,29 +15,45 @@
 <div class="container-fluid mx-auto py-6" style="min-height: 75vh;">
     <div class="row">
         <div class="col-md-9">
-            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 800px; overflow-x: auto;">
+            <div class="card hide-scrollbar instructions_mobile mt-2" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; overflow: scroll;">
+                <div>
+                    <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Instructions</h5>
+                    <ul class="instructions_list_fee_collection">
+                        <li style="list-style-type: disc;" id="instructions_list_fee_collection_1">Select checkboxes to pay the fee for selected members for the Pending month</li>
+                        <li style="list-style-type: disc;" id="instructions_list_fee_collection_2">Use Search to filter members and get the detailed fee payment data</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card hide-scrollbar member_search_card_mobile">
+                <input type="text" id="memberSearchFeeCollection" placeholder="Search by Member ID, Name, or Phone No" 
+                       style="width:100%; padding:8px 12px; margin-bottom:12px; border:1px solid #ccc; border-radius:4px;">
+                <div class="matched_members">
+
+                </div>
+            </div>
+            <div class="card hide-scrollbar fee_collection_data_div" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 800px; overflow-x: auto;">
                 <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Fee Collection</h5>
                 <div class="fee_schedule">
                     <table id="fee_collection_table" style="border-collapse:collapse; width:100%; margin-bottom:1.25rem; border:1px solid #ddd;">
-                        <thead>
+                        <thead id="fee_collection_table_head">
                             <tr style="background-color:#f8f9fa;">
-                                <th style="text-align:left; padding:12px; border:1px solid #ddd; width:15%; font-weight:600; background-color:#e9ecef;">Member ID</th>
-                                <th style="text-align:left; padding:12px; border:1px solid #ddd; width:25%; font-weight:600; background-color:#e9ecef;">Full Name</th>
-                                <th style="text-align:left; padding:12px; border:1px solid #ddd; width:20%; font-weight:600; background-color:#e9ecef;">Phone No</th>
-                                <th style="text-align:left; padding:12px; border:1px solid #ddd; width:20%; font-weight:600; background-color:#e9ecef;">Pending</th>
-                                <th style="text-align:left; padding:12px; border:1px solid #ddd; width:20%; font-weight:600; background-color:#e9ecef; text-align:center;">Action</th>
+                                <th class="fee_collection_thead_data">ID</th>
+                                <th class="fee_collection_thead_data">Full Name</th>
+                                <th class="fee_collection_thead_data">Phone No</th>
+                                <th class="fee_collection_thead_data">Pending</th>
+                                <th class="fee_collection_thead_data" style="text-align:center;">Action</th>
                             </tr>
                         </thead>
                         <tbody id="fee_collection_table_body">
                             @foreach($members_fee as $member)
                             <tr style="background-color:#ffffff;">
-                                <td style="padding:12px; border:1px solid #ddd;">{{ $member->id }}</td>
-                                <td style="padding:12px; border:1px solid #ddd;">{{ $member->name }}</td>
-                                <td style="padding:12px; border:1px solid #ddd;">{{ $member->phone_no }}</td>
-                                <td style="padding:12px; border:1px solid #ddd;" id="fee_status_{{ $member->id }}">
+                                <td class="fee_collection_tbody_data">{{ $member->id }}</td>
+                                <td class="fee_collection_tbody_data">{{ $member->name }}</td>
+                                <td class="fee_collection_tbody_data">{{ $member->phone_no }}</td>
+                                <td class="fee_collection_tbody_data" id="fee_status_{{ $member->id }}">
                                     <button class="member_fee_month">{{ $member->for_month }}</button> (₹{{ number_format($member->amount, 2) }})
                                 </td>
-                                <td style="padding:12px; border:1px solid #ddd; text-align:center;" id="fee_action_{{ $member->id }}">
+                                <td class="fee_collection_tbody_data" style="text-align:center;" id="fee_action_{{ $member->id }}">
                                     @if($member->is_paid)
                                         <span style="color: green; font-weight: bold;">No Action Needed</span>
                                     @else
@@ -65,14 +71,14 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px; overflow: scroll;">
+            <div class="card hide-scrollbar member_search_card_desktop">
                 <input type="text" id="memberSearchFeeCollection" placeholder="Search by Member ID, Name, or Phone No" 
                        style="width:100%; padding:8px 12px; margin-bottom:12px; border:1px solid #ccc; border-radius:4px;">
                 <div class="matched_members">
 
                 </div>
             </div>
-            <div class="card hide-scrollbar mt-2" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; overflow: scroll;">
+            <div class="card hide-scrollbar instructions_desktop mt-2" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; overflow: scroll;">
                 <div>
                     <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Instructions</h5>
                     <ul class="instructions_list_fee_collection">

@@ -107,11 +107,11 @@
                             <input type="number" class="form-control one_time_fee" name="one_time_fee" step="0.01" min="0">
                         </div>
                         <div class="col-md-4 mt-4">
-                            <input type="radio" class="payment_type" name="payment_type" value="single" style="margin-left: 20px;"> Single Payment <br>
-                            <input type="radio" class="payment_type" name="payment_type" value="recurring" checked style="margin-left: 20px;"> Regular Payment
+                            <input type="radio" class="payment_type" name="payment_type" value="single"> Single Payment <br>
+                            <input type="radio" class="payment_type" name="payment_type" value="recurring" checked> Regular Payment
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row benefits_row">
                         <div class="col-md-12 mb-3">
                             <label for="benefits" class="form-label">Benefits</label>
                             <textarea class="form-control" id="benefits" name="benefits" rows="3" placeholder="List the benefits of this membership plan"></textarea>
@@ -128,8 +128,7 @@
                             <input type="checkbox" class="form-check-input" id="is_active" style="border: 2px solid #ccc;" name="is_active">&nbsp;&nbsp;&nbsp;Active
                         </div>
                         <div class="col-md-6 mt-4">
-                            <input type="checkbox" class="form-check-input" id="enable_transfer" style="margin-left: 20px; border: 2px solid #ccc;" 
-                            name="is_transferable">&nbsp;&nbsp;&nbsp;Enable Transfer
+                            <input type="checkbox" class="form-check-input" id="enable_transfer" name="is_transferable">&nbsp;&nbsp;&nbsp;Enable Transfer
                         </div>
                     </div>
                     <div class="row">
@@ -139,7 +138,7 @@
                         <div class="col-md-6 mt-4 time_schedule d-none" style="height:150px; overflow-y: scroll;">
                             <div class="row" id="time_schedule_div_1">
                                 <div class="col-md-6">
-                                    <input type="time" style="width:100%;" class="form-control" id="time_schedule_1" name="time_schedules[]">
+                                    <input type="time" class="form-control input_schedule_time" id="time_schedule_1" name="time_schedules[]">
                                 </div>
                                 <div class="col-md-6">
                                     
@@ -150,7 +149,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary add_membership">Add Membership</button>
+                    <button type="submit" class="add_membership">Add Membership</button>
                 </div>
             </form>
         </div>
@@ -192,12 +191,12 @@
                             <input type="number" class="form-control one_time_fee" id="edit_one_time_fee" name="edit_one_time_fee" step="0.01" min="0">
                         </div>
                         <div class="col-md-4 mt-4">
-                            <input type="radio" class="edit_payment_type" name="edit_payment_type" value="single" style="margin-left: 20px;"> Single Payment <br>
-                            <input type="radio" class="edit_payment_type" name="edit_payment_type" value="recurring" checked style="margin-left: 20px;"> Regular Payment
+                            <input type="radio" class="edit_payment_type" name="edit_payment_type" value="single"> Single Payment <br>
+                            <input type="radio" class="edit_payment_type" name="edit_payment_type" value="recurring" checked> Regular Payment
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-12 mb-3">
+                        <div class="col-md-12 mb-3 benefits_row">
                             <label for="editBenefits" class="form-label">Benefits</label>
                             <textarea class="form-control" id="editBenefits" name="benefits" rows="3" placeholder="List the benefits of this membership plan"></textarea>
                         </div>
@@ -213,8 +212,7 @@
                             <input type="checkbox" class="form-check-input" id="is_active" style="border: 2px solid #ccc;" name="is_active">&nbsp;&nbsp;&nbsp;Active
                         </div>
                         <div class="col-md-6 mt-4">
-                            <input type="checkbox" class="form-check-input" id="enable_transfer" style="margin-left: 20px; border: 2px solid #ccc;" 
-                            name="is_transferable">&nbsp;&nbsp;&nbsp;Enable Transfer
+                            <input type="checkbox" class="form-check-input" id="enable_transfer" name="is_transferable">&nbsp;&nbsp;&nbsp;Enable Transfer
                         </div>
                     </div>
                     <div class="row">
@@ -235,7 +233,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary edit_membership">Save Changes</button>
+                    <button type="submit" class="edit_membership">Save Changes</button>
                 </div>
             </form>
         </div>

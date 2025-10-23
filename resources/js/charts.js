@@ -356,14 +356,14 @@ export function renderMemberProgressChart(canvasId, measure_dates, measurement_v
 }
 
 export function renderFeeCollectionsChart(canvasId, labels, values, filter) {
-  let x_title = '';
-  if(filter.membership_id == 0) {
-    x_title = 'Payment Type';
-  } else if(filter.membership_id == -1) {
-    x_title = 'All Memberships';
-  } else if(filter.membership_id != 0 && filter.membership_id != -1) {
-    x_title = 'Membership Type';
-  }
+  let x_title = 'Memberships';
+  // if(filter.membership_id == 0) {
+  //   x_title = 'Payment Type';
+  // } else if(filter.membership_id == -1) {
+  //   x_title = 'All Memberships';
+  // } else if(filter.membership_id != 0 && filter.membership_id != -1) {
+  //   x_title = 'Membership Type';
+  // }
   const ctx = document.getElementById(canvasId);
   return new Chart(ctx, {
     type: 'bar',
