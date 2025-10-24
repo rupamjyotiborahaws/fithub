@@ -213,6 +213,15 @@
     padding: 5px 10px;  
     border-radius: 4px;   
 }
+.transfer_membership_btn {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;   
+    cursor: pointer;
+}
 .add_more_time_schedule, .add_more_time_schedule_edit {
     background-color: white;
     color: #007bff;
@@ -392,6 +401,16 @@
     padding:8px; 
     width:25%;
 }
+.membership_transfer_filtered_table_thead_data {
+    border:1px solid #ddd; 
+    padding:8px; 
+    width:18%;    
+}
+.membership_transfer_filtered_table_tbody_data {
+    border:1px solid #ddd; 
+    padding:8px; 
+    width:18%;    
+}
 .attendance_thead_data {
     text-align:left; 
     padding:12px; 
@@ -432,4 +451,23 @@
     border: 1px solid #ccc;
     border-radius: 4px;
     padding: 12px;
+}
+#memberSearchMembershipTransfer {
+    width:100%; 
+    padding:8px 12px; 
+    margin-bottom:12px; 
+    border:1px solid #ccc; 
+    border-radius:4px;
+}
+.transfer_membership_btn:hover {
+    background-color: #FCFCFC;
+}
+#adjust_payment_txt {
+    font-size: 15px;
+    font-weight: normal;
+    color:#f33412;
+}
+.adjust_payment_checkbox {
+    width: 18px;
+    height: 18px;
 }

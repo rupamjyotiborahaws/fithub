@@ -16,6 +16,10 @@ use App\Models\Attendance;
 use App\Models\Trainer;
 use App\Models\MemberTrainer;
 use App\Models\MembershipTimeSchedule;
+use App\Models\FeePaymentScheduleHistory;
+use App\Models\FeePaymentHistory;
+use App\Models\TransferMembership;
+use App\Models\MembershipTransferLog;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -1125,7 +1129,184 @@ class AdminController extends Controller
 
     public function transferMembership(Request $request) {
         $client_settings = $request->client_settings;
-        return view('admin.transfer_membership', compact('client_settings'));
+        $members=User::where(['isAdmin' => 0])
+                    ->join('memberdetails', 'users.id', '=', 'memberdetails.user_id')
+                    ->join('memberships', 'memberdetails.membership_type', '=', 'memberships.id')
+                    ->select('users.id', 'users.name', 'users.phone_no', 'memberdetails.membership_type', 'memberdetails.membership_start_date', 
+                             'memberships.type as membership_name', 'memberships.is_transferable as is_transferable')
+                    ->get();
+        $transferable_memberships=Membership::where(['is_transferable' => 1, 'is_active' => 1])->get();
+        return view('admin.transfer_membership', compact('client_settings', 'members', 'transferable_memberships'));
+    }
+
+    public function transferMembershipProcess(Request $request) {
+        $inputs = $request->all();
+        $membership_transfer_log = MembershipTransferLog::where(['member_id' => $inputs['member_id']])->get();
+        if(count($membership_transfer_log) > 0) {
+            return response()->json(['message' => 'Membership has already been transferred once for this member. Multiple transfers are not allowed.', 'status' => 'failed'], 200);
+        }
+        $memberdetail = MemberDetail::where(['user_id' => $inputs['member_id'], 'membership_type' => $inputs['current_membership_id']])->first();
+        if(!$memberdetail) {
+            return response()->json(['message' => 'Member details not found.', 'status' => 'failed'], 400);
+        }
+        if($inputs['start_date'] >= $memberdetail->membership_end_date) {
+            return response()->json(['message' => 'New membership start date cannot be after current membership end date.', 'status' => 'failed'], 400);
+        }
+        $old_membership_id = $inputs['current_membership_id'];
+        $old_membership_start_date = $memberdetail->membership_start_date;
+        $old_membership_end_date = $memberdetail->membership_end_date;
+
+        $fee_payment_schedules = FeePaymentSchedule::where(['member_id' => $inputs['member_id'], 'membership_type' => $inputs['current_membership_id']])->get();
+        $fee_payment_ids = [];
+        foreach ($fee_payment_schedules as $schedule) {
+            if($schedule->is_paid == 1 && ($schedule->fee_payment_id != null || $schedule->fee_payment_id != '')) {
+                $fee_payment_ids[] = $schedule->fee_payment_id;
+            }
+        }
+        $fee_payments = FeePayment::whereIn('id', $fee_payment_ids)->get();
+
+        $membership = Membership::find($inputs['transfer_to_membership_id']);
+        $startDate = Carbon::parse($inputs['start_date']);
+        $membership_end_date = $startDate->addMonths($membership->duration_months);
+
+        // Backup old member details
+        TransferMembership::create([
+            'member_id' => $inputs['member_id'],
+            'old_membership_id' => $old_membership_id,
+            'new_membership_id' => $inputs['transfer_to_membership_id'],
+            'old_membership_start_date' => $old_membership_start_date,
+            'old_membership_end_date' => $old_membership_end_date,
+            'new_membership_start_date' => $startDate,
+            'new_membership_end_date' => $membership_end_date,
+            'transfer_date' => date('Y-m-d')
+        ]);
+        //$time_of_schedule = MembershipTimeSchedule::where('id', $request->time_schedule)->first();
+        $time_of_schedule['start_time'] = null;
+        $memberdetail_update['membership_type'] = $inputs['transfer_to_membership_id'];
+        $memberdetail_update['membership_start_date'] = $inputs['start_date'];
+        $memberdetail_update['membership_end_date'] = $membership_end_date;
+        $memberdetail_update['membership_schedule_time'] = $time_of_schedule['start_time'] ?? null;
+        MemberDetail::where(['user_id' => $inputs['member_id'], 'membership_type' => $inputs['current_membership_id']])->update($memberdetail_update);
+        // Backup old payment schedules and payments
+        foreach ($fee_payment_schedules as $schedule) {
+            FeePaymentScheduleHistory::create([
+                'member_id' => $schedule->member_id,
+                'membership_type' => $schedule->membership_type,
+                'for_month' => $schedule->for_month,
+                'due_date' => $schedule->due_date,
+                'amount' => $schedule->amount,
+                'is_paid' => $schedule->is_paid,
+                'paid_on' => $schedule->paid_on,
+                'fee_payment_id' => $schedule->fee_payment_id
+            ]);
+        }
+        foreach ($fee_payments as $payment) {
+            FeePaymentHistory::create([
+                'id_from_fee_payments' => $payment->id,
+                'member_id' => $payment->member_id,
+                'fee_type' => $payment->fee_type,
+                'pay_for_month' => $payment->pay_for_month,
+                'amount' => $payment->amount,
+                'payment_date' => $payment->payment_date,
+                'payment_method' => $payment->payment_method,
+                'transaction_id' => $payment->transaction_id,
+                'notes' => $payment->notes
+            ]);
+        }
+        // Transfer to new membership
+        $membership_info = Membership::where(['id' => $inputs['transfer_to_membership_id']])->first();
+        $total_months = $membership_info->duration_months;
+        $payment_type = $membership_info->payment_type;
+        $admission_fee = $membership_info->admission_fee;
+        $monthly_fee = $membership_info->monthly_fee;
+        $one_time_fee = $membership_info->one_time_fee;
+        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        // Insert first record in payment schedule table
+        $current_month = Carbon::parse($inputs['start_date']);
+        $current_fee_day = $current_month->day;
+        $current_fee_month = $current_month->month;
+        $current_fee_year = $current_month->year;
+        $current_month = Carbon::create($current_fee_year, $current_fee_month, $current_fee_day)->toDateString();
+        $feeSchedule = new FeePaymentSchedule();
+        $feeSchedule->member_id = $inputs['member_id'];
+        $feeSchedule->membership_type = $membership_info->id;
+        $feeSchedule->for_month = $months[$current_fee_month - 1]." ".$current_fee_year;
+        $feeSchedule->due_date = $current_month;
+        $feeSchedule->amount = $monthly_fee;
+        $feeSchedule->is_paid = $payment_type == 'single' ? true : false;
+        $feeSchedule->save();
+        if($total_months > 0) {
+            for($month = 1; $month <= $total_months - 1; $month++) {
+                $next_month = Carbon::parse($inputs['start_date'])->addMonths($month);
+                $next_fee_day = $next_month->day;
+                $next_fee_month = $next_month->month;
+                $next_fee_year = $next_month->year;
+                $next_month = Carbon::create($next_fee_year, $next_fee_month, $next_fee_day)->toDateString();
+                $feeSchedule = new FeePaymentSchedule();
+                $feeSchedule->member_id = $inputs['member_id'];
+                $feeSchedule->membership_type = $membership_info->id;
+                $feeSchedule->for_month = $months[$next_fee_month - 1]." ".$next_fee_year;
+                $feeSchedule->due_date = $next_month;
+                $feeSchedule->amount = $monthly_fee;
+                $feeSchedule->is_paid = $payment_type == 'single' ? true : false;
+                $feeSchedule->save();
+            }
+        }
+        if($payment_type == 'single') {
+            // If one time payment, mark all as paid
+            $fee_schedule = FeePaymentSchedule::where(['member_id' => $inputs['member_id'], 'membership_type' => $membership_info->id])->get();
+            $payment_ids = [];
+            foreach ($fee_schedule as $key => $fee) {
+                $payment_ids[] = $fee->id;
+            }
+            // Create FeePayment record
+            $feePayment = new FeePayment();
+            $feePayment->member_id = $user->id;
+            $feePayment->fee_type = 'one_time';
+            $feePayment->pay_for_month = implode(',', $payment_ids);
+            $feePayment->amount = $membership_info->one_time_fee;
+            $feePayment->payment_date = date('Y-m-d');
+            $feePayment->payment_method = $request->payment_method ?? 'cash';
+            $feePayment->transaction_id = $request->transaction_id ?? '';
+            $feePayment->notes = '';
+            $feePayment->save();
+            // Update the payment schedule records as paid
+            foreach ($fee_schedule as $key => $fee) {
+                $fee->is_paid = true;
+                $fee->fee_payment_id = $feePayment->id;
+                $fee->save();
+            }
+        }
+        // Remove old fee schedule records after backup
+        foreach ($fee_payment_schedules as $schedule) {
+            $schedule->delete();
+        }
+        // Set payment status in new fee schedule as per old payment status if adjust payment option selected
+        if($inputs['isAdjustPaymentChecked'] == 1) {
+            $fee_pay_schedule = FeePaymentSchedule::where(['member_id' => $inputs['member_id'], 'membership_type' => $membership_info->id])->get();
+            foreach ($fee_pay_schedule as $sch) {
+                $old_fee_payment_schedule = FeePaymentScheduleHistory::where([
+                    'member_id' => $sch->member_id,
+                    'membership_type' => $old_membership_id,
+                    'for_month' => $sch->for_month
+                ])->first();
+                if($old_fee_payment_schedule) {
+                    $sch->is_paid = $old_fee_payment_schedule->is_paid;
+                    $sch->paid_on = $old_fee_payment_schedule->paid_on;
+                    $sch->fee_payment_id = $old_fee_payment_schedule->fee_payment_id;
+                    $sch->save();
+                }
+            }
+        }
+
+        // Add entry in membership transfer log
+        MembershipTransferLog::create([
+            'member_id' => $inputs['member_id'],
+            'from_membership_id' => $old_membership_id,
+            'to_membership_id' => $inputs['transfer_to_membership_id'],
+            'transfer_date' => date('Y-m-d')
+        ]);
+        return response()->json(['message' => 'Membership transferred successfully.', 'status' => 'success'], 200);
     }
 
     public function getAttendanceReport($member_id, Request $request) {

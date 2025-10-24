@@ -36,3 +36,4 @@ Route::get('trainer_allotments', [AdminController::class, 'trainerAllotments']);
 Route::get('get_attendance_report/{member_id}', [AdminController::class, 'getAttendanceReport']);
 Route::get('today_attendance', [AdminController::class, 'todayAttendance']);
 Route::get('fetch_member_progress/{member_id}/{metric}', [AdminController::class, 'fetchMemberProgress']);
+Route::post('transfer_membership', [AdminController::class, 'transferMembershipProcess']);

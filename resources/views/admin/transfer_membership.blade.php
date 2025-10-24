@@ -1,6 +1,6 @@
 @extends('layouts.layout')
 
-@section('title', 'Fee Collection')
+@section('title', 'Transfer Membership')
 
 @section('content')
 
@@ -40,30 +40,18 @@
 @endphp
 <div class="container-fluid mx-auto py-6" style="min-height: 75vh;">
     <div class="row">
-        <div class="col-md-9">
-            {{-- Fee Collection --}}
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; height: 800px; overflow-x: auto;">
-                <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Fee Collection</h5>
-                <input type="text" id="memberSearchFeeCollection" placeholder="Search by Member ID, Name, or Phone No" 
-                       style="width:100%; padding:8px 12px; margin-bottom:12px; border:1px solid #ccc; border-radius:4px;">
-                <div class="matched_members">
+        <div class="col-md-12 mb-4">
+            {{-- Membership Transfer --}}
+            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; height: 800px;">
+                <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Membership Transfer</h5>
+                <input type="text" id="memberSearchMembershipTransfer" placeholder="Search by Member ID, Name, or Phone No">
+                <div class="matched_members_transfer">
 
                 </div>
-                <div class="fee_schedule">
+                <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; height: 800px; overflow:scroll;">
+                    <div class="membership_transfer_details">
 
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="bg-white p-2 rounded-lg shadow-md">
-                <h6 class="mb-4" id="chartHeader">Fee Collection status for the month of {{ \Carbon\Carbon::now()->format('M Y') }}</h6>
-                <div style="height: 350px;">
-                    <canvas id="currentMonthFeeCollectionChart"></canvas>
-                </div>
-                <div style="text-align: center; margin-top: 10px;">
-                    @foreach ($months as $key=>$month)
-                        <input type="radio" class="mb-2 recent_fee_collection" name="recent_fee_collection" value="{{ $month }}" @if($key == 0) checked @endif>&nbsp;{{ $month }} &nbsp;&nbsp;&nbsp;
-                    @endforeach
+                    </div>
                 </div>
             </div>
         </div>
@@ -121,57 +109,9 @@
     </div>
 </div>
 <script>
-    const total_members = @json($allMembers ?? []);
-    console.log('All Members:', total_members);
-    
-    // Backup chart creation function
-    function createSimpleChart() {
-        const canvas = document.getElementById('currentMonthFeeCollectionChart');
-        if (!canvas) {
-            console.error('Canvas not found');
-            return;
-        }
-        
-        console.log('Creating simple test chart...');
-        try {
-            // Test with simple hardcoded data first
-            const testChart = new Chart(canvas, {
-                type: 'pie',
-                data: {
-                    labels: ['Paid', 'Unpaid'],
-                    datasets: [{
-                        data: [1000, 500],
-                        backgroundColor: ['#28a745', '#dc3545']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-            console.log('Test chart created successfully:', testChart);
-        } catch (error) {
-            console.error('Error creating test chart:', error);
-        }
-    }
-    
-    // Initialize fee collection chart when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Fee collection page loaded, checking for chart element...');
-        const chartElement = document.getElementById('currentMonthFeeCollectionChart');
-        console.log('Chart element:', chartElement);
-        
-        // First try to load with our function
-        if (chartElement && typeof window.loadCurrentMonthFeeCollectionData === 'function') {
-            console.log('Trying main chart function...');
-            setTimeout(function() {
-                window.loadCurrentMonthFeeCollectionData();
-            }, 1000);
-        } else {
-            console.log('Main function not available, trying backup...');
-            // Fallback to simple chart
-            setTimeout(createSimpleChart, 1500);
-        }
-    });
+    const members_t = @json($members ?? []);
+    const transferable_memberships = @json($transferable_memberships ?? []);
+    console.log('All Members:', members_t);
+    console.log('Transferable Memberships:', transferable_memberships);
 </script>
 @endsection

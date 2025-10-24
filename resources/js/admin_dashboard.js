@@ -818,6 +818,118 @@ $(document).ready(function() {
                 });
         });
 
+        $('#memberSearchMembershipTransfer').on('input', function() {
+                const query = $(this).val().toLowerCase();
+                const matchedMembers = members_t.filter(member => member.name.toLowerCase().includes(query) || 
+                                       member.id.toString().includes(query) || 
+                                       member.phone_no.includes(query));
+                const container = $('.matched_members_transfer');
+                container.empty();
+                if (query.length === 0) {
+                        return;
+                }
+                if (matchedMembers.length === 0) {
+                        container.append('<p>No members found.</p>');
+                        return;
+                }
+                matchedMembers.forEach(member => {
+                        const memberDiv = `<div style="padding:8px; border-bottom:1px solid #ddd; cursor:pointer;"><a class="member_link_t" data-id="${member.id}" data-name="${member.name}" style="text-decoration:none;">${member.name}</a></div>`;
+                        container.append(memberDiv);
+                });
+        });
+
+        $(document).on('click', '.member_link_t', function() {
+                const memberId = $(this).data('id');
+                const matchedMemberships = members_t.filter(member => member.id === memberId);
+                console.log('Matched Memberships : ' + JSON.stringify(matchedMemberships));
+                $('#memberSearchMembershipTransfer').val('');
+                $('.matched_members_transfer').empty();
+                const scheduleContainer = $('.membership_transfer_details');
+                scheduleContainer.empty();
+                let scheduleHtml = ``;
+                scheduleHtml += `<table style="width:100%; border-collapse:collapse; margin-top:12px; overflow:scroll;">
+                        <thead>
+                                <tr>
+                                        <th class="membership_transfer_filtered_table_thead_data">Name</th>
+                                        <th class="membership_transfer_filtered_table_thead_data">Membership</th>
+                                        <th class="membership_transfer_filtered_table_thead_data">Transferable</th>
+                                        <th class="membership_transfer_filtered_table_thead_data">Membership Start Date</th>
+                                        <th class="membership_transfer_filtered_table_thead_data">Transfer To</th>
+                                        <th style="border:1px solid #ddd; padding:8px; width:10%;">Action</th>
+                                </tr>
+                        </thead>
+                        <tbody>`;
+                matchedMemberships.forEach(item => {
+                        let transer_to_options = `<select name="transfer_to_membership_id" class="form-control" id="transfer_to_${item.id}_${item.membership_type}">`;
+                        transer_to_options += `<option value="">Select Membership</option>`;
+                        transferable_memberships.forEach(membership => {
+                                transer_to_options += `<option value="${membership.id}">${membership.type} - ${membership.duration_months} months</option>`;
+                        });
+                        let adjust_payments = `<div class="row" style="margin-top: 15px;"><div class="col-1"><input type="checkbox" id="is_adjust_payment_${item.id}_${item.membership_type}" name="adjust_payment_checkbox_value" class="adjust_payment_checkbox" checked></div>
+                                               <div class="col-11"><label id="adjust_payment_txt">Adjust payments for already paid months</label></div></div>`;
+                        scheduleHtml += `<tr>
+                                <td class="membership_transfer_filtered_table_tbody_data">${item.name}</td>
+                                <td class="membership_transfer_filtered_table_tbody_data">${item.membership_name}</td>
+                                <td class="membership_transfer_filtered_table_tbody_data">${item.is_transferable == 1 ? 'Yes' : 'No'}</td>
+                                <td class="membership_transfer_filtered_table_tbody_data">${item.is_transferable == 1 ? 
+                                        `<input type="date" name="start_date" value="${item.membership_start_date}">
+                                        ${adjust_payments}` : item.membership_start_date}</td>
+                                <td class="membership_transfer_filtered_table_tbody_data">${item.is_transferable == 1 ? transer_to_options : 'Can not be Transfered'}</td>
+                                <td style="border:1px solid #ddd; padding:8px; width:10%;"><button class="transfer_membership_btn" 
+                                data-member-id="${item.id}" data-membership-id="${item.membership_type}">
+                                Transfer</button></td>`;
+                        scheduleHtml += `</tr>`;
+                });
+                scheduleHtml += `</tbody></table>`;
+                scheduleContainer.append(scheduleHtml);
+        });
+
+        $(document).on('click', '.transfer_membership_btn', function() {
+                const memberId = $(this).data('member-id');
+                const membershipId = $(this).data('membership-id');
+                const transferToMembershipId = $(`#transfer_to_${memberId}_${membershipId}`).val();
+                const startDate = $(`input[name="start_date"]`).val();
+                const isAdjustPaymentChecked = $(`#is_adjust_payment_${memberId}_${membershipId}`).is(':checked');
+                if(!transferToMembershipId) {
+                        toastr.options.timeOut = 5000;
+                        toastr.error("Please select membership to transfer to");
+                        return;
+                }
+                $('.loadercontent').html('Processing membership transfer, please wait...');
+                $("#loader").show();
+                $.ajax({
+                        url: baseUrl + '/api/transfer_membership',
+                        method: 'POST',
+                        data: {
+                                member_id: memberId,
+                                current_membership_id: membershipId,
+                                transfer_to_membership_id: transferToMembershipId,
+                                start_date: startDate,
+                                isAdjustPaymentChecked: isAdjustPaymentChecked
+                        },
+                        success: function(response) {
+                                console.log('Membership transfer response:', response);
+                                $('.loadercontent').html('');
+                                $("#loader").hide();
+                                if(response.status === 'failed') {
+                                        toastr.options.timeOut = 8000;
+                                        toastr.error(response.message || "Failed to transfer membership");
+                                        return;
+                                } else if(response.status === 'success') {
+                                        toastr.options.timeOut = 5000;
+                                        toastr.success(response.message || "Membership transferred successfully");
+                                        $('.membership_transfer_details').empty();
+                                }
+                        },
+                        error: function(xhr, status, err) {
+                                $('.loadercontent').html('');
+                                $("#loader").hide();
+                                toastr.options.timeOut = 5000;
+                                toastr.error(err || "Error transferring membership");
+                        }
+                });
+        });
+
         $('#memberSearchFeeCollection').on('input', function() {
                 const query = $(this).val().toLowerCase();
                 const matchedMembers = total_members.filter(member => member.name.toLowerCase().includes(query) || 

@@ -65,7 +65,7 @@
                                         <a href="{{ route('member.registration') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">New Registration</a>
                                         <a href="{{ route('member.progress_tracker') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Progress Tracker</a>
                                         <a href="{{ route('member.allot_trainer') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Allot Trainer</a>
-                                        <!-- <a href="{{ route('member.transfer_membership') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Transfer Membership</a> -->
+                                        <a href="{{ route('member.transfer_membership') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Transfer Membership</a>
                                     </div>
                                 </div>
                             </div>
@@ -188,7 +188,7 @@
                                     <a href="{{ route('member.registration') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">New Registration</a>
                                     <a href="{{ route('member.progress_tracker') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Progress Tracker</a>
                                     <a href="{{ route('member.allot_trainer') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Allot Trainer</a>
-                                    <!-- <a href="{{ route('member.transfer_membership') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Transfer Membership</a> -->
+                                    <a href="{{ route('member.transfer_membership') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Transfer Membership</a>
                                 </div>
                             </div>
 
