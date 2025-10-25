@@ -17,13 +17,8 @@
                 </div>
             </div>
             <div class="card hide-scrollbar member_search_card_mobile" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px; margin-bottom:10px;">
-                <div>
-                    <input type="text" id="memberSearchforAttendance" placeholder="Search Members..." 
-                           class="w-100 mb-2 p-1 border rounded" style="border:1px solid #ccc; border-radius:4px; padding:4px;" />
-                </div>
-                <div class="matched_members_attendance" style="max-height:300px; overflow:auto;">
-                    
-                </div>
+                    <input type="text" class="memberSearchforAttendance" placeholder="Search Members..." />
+                    <div class="matched_members_attendance" style="max-height:300px; overflow:auto;"></div>
             </div>
             {{-- Membership Settings --}}
             <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 725px; overflow: scroll;">
@@ -60,13 +55,8 @@
         </div>
         <div class="col-md-3 col-lg-3 col-sm-12 col-xs-12">
             <div class="card hide-scrollbar member_search_card_desktop" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px; margin-bottom:10px;">
-                <div>
-                    <input type="text" id="memberSearchforAttendance" placeholder="Search Members..." 
-                           class="w-100 mb-2 p-1 border rounded" style="border:1px solid #ccc; border-radius:4px; padding:4px;" />
-                </div>
-                <div class="matched_members_attendance" style="max-height:300px; overflow:auto;">
-                    
-                </div>
+                <input type="text" class="memberSearchforAttendance" placeholder="Search Members..." />
+                <div class="matched_members_attendance" style="max-height:300px; overflow:auto;"></div>
             </div>
             <div class="card hide-scrollbar instructions_desktop" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px; margin-bottom:10px;">
                 <div>

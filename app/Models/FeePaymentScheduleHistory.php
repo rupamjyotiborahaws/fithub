@@ -17,5 +17,6 @@ class FeePaymentScheduleHistory extends Model
         'paid_on',
         'is_paid',
         'fee_payment_id',
+        'latest'
     ];
 }

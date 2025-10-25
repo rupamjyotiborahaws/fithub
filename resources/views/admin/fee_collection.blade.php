@@ -25,16 +25,15 @@
                 </div>
             </div>
             <div class="card hide-scrollbar member_search_card_mobile">
-                <input type="text" id="memberSearchFeeCollection" placeholder="Search by Member ID, Name, or Phone No" 
-                       style="width:100%; padding:8px 12px; margin-bottom:12px; border:1px solid #ccc; border-radius:4px;">
-                <div class="matched_members">
+                <input type="text" class="memberSearchFeeCollection" placeholder="Search by Member ID, Name, or Phone No.">
+                <div class="matched_members_for_fee_collection">
 
                 </div>
             </div>
             <div class="card hide-scrollbar fee_collection_data_div" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 800px; overflow-x: auto;">
                 <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Fee Collection</h5>
                 <div class="fee_schedule">
-                    <table id="fee_collection_table" style="border-collapse:collapse; width:100%; margin-bottom:1.25rem; border:1px solid #ddd;">
+                    <table class="fee_collection_table hide-scrollbar">
                         <thead id="fee_collection_table_head">
                             <tr style="background-color:#f8f9fa;">
                                 <th class="fee_collection_thead_data">ID</th>
@@ -72,9 +71,8 @@
         </div>
         <div class="col-md-3">
             <div class="card hide-scrollbar member_search_card_desktop">
-                <input type="text" id="memberSearchFeeCollection" placeholder="Search by Member ID, Name, or Phone No" 
-                       style="width:100%; padding:8px 12px; margin-bottom:12px; border:1px solid #ccc; border-radius:4px;">
-                <div class="matched_members">
+                <input type="text" class="memberSearchFeeCollection" placeholder="Search by Member ID, Name, or Phone No.">
+                <div class="matched_members_for_fee_collection">
 
                 </div>
             </div>
@@ -176,50 +174,50 @@
 </div>
 <script>
     const total_members = @json($allMembers ?? []);
-    
+    console.log('Total Members in Fee Collection:', total_members);
     // Backup chart creation function
-    function createSimpleChart() {
-        const canvas = document.getElementById('currentMonthFeeCollectionChart');
-        if (!canvas) {
-            console.error('Canvas not found');
-            return;
-        }
-        try {
-            // Test with simple hardcoded data first
-            const testChart = new Chart(canvas, {
-                type: 'pie',
-                data: {
-                    labels: ['Paid', 'Unpaid'],
-                    datasets: [{
-                        data: [1000, 500],
-                        backgroundColor: ['#28a745', '#dc3545']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        } catch (error) {
-            console.error('Error creating test chart:', error);
-        }
-    }
+    // function createSimpleChart() {
+    //     const canvas = document.getElementById('currentMonthFeeCollectionChart');
+    //     if (!canvas) {
+    //         console.error('Canvas not found');
+    //         return;
+    //     }
+    //     try {
+    //         // Test with simple hardcoded data first
+    //         const testChart = new Chart(canvas, {
+    //             type: 'pie',
+    //             data: {
+    //                 labels: ['Paid', 'Unpaid'],
+    //                 datasets: [{
+    //                     data: [1000, 500],
+    //                     backgroundColor: ['#28a745', '#dc3545']
+    //                 }]
+    //             },
+    //             options: {
+    //                 responsive: true,
+    //                 maintainAspectRatio: false
+    //             }
+    //         });
+    //     } catch (error) {
+    //         console.error('Error creating test chart:', error);
+    //     }
+    // }
     
-    // Initialize fee collection chart when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        $('.check_pay_for_multiple_member:checked').each(function() {
-            $(this).prop('checked', false);
-        });
-        const chartElement = document.getElementById('currentMonthFeeCollectionChart');
-        // First try to load with our function
-        if (chartElement && typeof window.loadCurrentMonthFeeCollectionData === 'function') {
-            setTimeout(function() {
-                window.loadCurrentMonthFeeCollectionData();
-            }, 1000);
-        } else {
-            // Fallback to simple chart
-            setTimeout(createSimpleChart, 1500);
-        }
-    });
+    // // Initialize fee collection chart when page loads
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     $('.check_pay_for_multiple_member:checked').each(function() {
+    //         $(this).prop('checked', false);
+    //     });
+    //     const chartElement = document.getElementById('currentMonthFeeCollectionChart');
+    //     // First try to load with our function
+    //     if (chartElement && typeof window.loadCurrentMonthFeeCollectionData === 'function') {
+    //         setTimeout(function() {
+    //             window.loadCurrentMonthFeeCollectionData();
+    //         }, 1000);
+    //     } else {
+    //         // Fallback to simple chart
+    //         setTimeout(createSimpleChart, 1500);
+    //     }
+    // });
 </script>
 @endsection

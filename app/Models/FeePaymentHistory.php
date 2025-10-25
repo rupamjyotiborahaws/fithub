@@ -17,5 +17,6 @@ class FeePaymentHistory extends Model
         'payment_method',
         'transaction_id',
         'notes',
+        'id_from_fee_payments'
     ];
 }

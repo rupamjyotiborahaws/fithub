@@ -18,8 +18,7 @@
             </div>
             <div class="card member_search_card member_search_card_mobile">
                 <div>
-                    <input type="text" id="memberSearchforkealthrec" placeholder="Search Members..." 
-                           class="w-100 mb-2 p-1 border rounded" style="border:1px solid #ccc; border-radius:4px; padding:4px;" />
+                    <input type="text" class="memberSearchforkealthrec" placeholder="Search Members..." />
                 </div>
                 <div class="matched_members_health_rec" style="max-height:300px; overflow:auto;">
                     
@@ -60,10 +59,7 @@
         </div>
         <div class="col-md-3 col-lg-3 col-sm-12 col-xs-12">
             <div class="card member_search_card member_search_card_desktop">
-                <div>
-                    <input type="text" id="memberSearchforkealthrec" placeholder="Search Members..." 
-                           class="w-100 mb-2 p-1 border rounded" style="border:1px solid #ccc; border-radius:4px; padding:4px;" />
-                </div>
+                    <input type="text" class="memberSearchforkealthrec" placeholder="Search Members..." />
                 <div class="matched_members_health_rec" style="max-height:300px; overflow:auto;">
                     
                 </div>

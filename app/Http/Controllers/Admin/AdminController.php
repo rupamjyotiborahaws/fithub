@@ -742,20 +742,16 @@ class AdminController extends Controller
 
     public function saveConfig(Request $request) {
         $inputs = $request->all();
-        $request->validate([
-            'registration_fee' => 'required|numeric|min:0',
-            'monthly_fee' => 'required|numeric|min:0'
-        ]);
         $config = Config::first();
         if($config) {
-            $config->registration_fee = $inputs['registration_fee'];
-            $config->monthly_fee = $inputs['monthly_fee'];
+            $config->membership_renewal_reminder = $inputs['membership_renewal_reminder'];
+            $config->membership_transfer_limit = $inputs['membership_transfer_limit'];
             $config->save();
             return response()->json(['message' => 'Config updated successfully.', 'data' => $config, 'status' => 'updated'], 200);
         } else {
             $config = new Config();
-            $config->registration_fee = $inputs['registration_fee'];
-            $config->monthly_fee = $inputs['monthly_fee'];
+            $config->membership_renewal_reminder = $inputs['membership_renewal_reminder'];
+            $config->membership_transfer_limit = $inputs['membership_transfer_limit'];
             $config->save();
             return response()->json(['message' => 'Config added successfully.', 'data' => $config, 'status' => 'added'], 200);
         }
@@ -763,58 +759,34 @@ class AdminController extends Controller
 
     public function processFeePayment(Request $request) {
         $inputs = $request->all();
-        $request->validate([
-            'payment_ids' => 'required',
-            'type' => 'required|string|in:monthly,annual',
-            'payment_method' => 'required|string|in:cash,upi',
-            'transaction_id' => 'nullable|string|max:255',
-            'note' => 'nullable|string|max:1000'
-        ]);
         $payment_ids = explode(',', $inputs['payment_ids']);
         if(count($payment_ids) == 0) {
             return response()->json(['message' => 'No payments selected to process.', 'status' => 'failed'], 400);
         }
-        $first_payment = FeePaymentSchedule::where(['id' => $payment_ids[0]])->first();
-        if(!$first_payment) {
-            return response()->json(['message' => 'Invalid payment selected.', 'status' => 'failed'], 400);
-        }
-        $member_id = $first_payment->member_id;
-        $total_amount = 0;
-        foreach($payment_ids as $pid) {
-            $payment = FeePaymentSchedule::where(['id' => $pid, 'is_paid' => false])->first();
-            if($payment) {
-                $total_amount += $payment->amount;
-            }
-        }
-        if($total_amount == 0) {
+        $payment_schedules = FeePaymentSchedule::whereIn('id', $payment_ids)->where('is_paid', false)->get();
+        if(count($payment_schedules) == 0) {
             return response()->json(['message' => 'Selected payments are already paid or invalid.', 'status' => 'failed'], 400);
         }
-
-        // Create FeePayment record
-        $feePayment = new FeePayment();
-        $feePayment->member_id = $member_id;
-        $feePayment->fee_type = $inputs['type'];
-        $feePayment->pay_for_month = implode(',', $payment_ids);
-        $feePayment->amount = $total_amount;
-        $feePayment->payment_date = date('Y-m-d');
-        $feePayment->payment_method = $inputs['payment_method'];
-        $feePayment->transaction_id = $inputs['transaction_id'];
-        $feePayment->notes = $inputs['note'] ?? '';
-        $feePayment->save();
-
-        // Update FeePaymentSchedule records as paid
-        if($feePayment->id) {
-            foreach($payment_ids as $pid) {
-                $payment = FeePaymentSchedule::where(['id' => $pid, 'is_paid' => false])->first();
-                if($payment) {
-                    $payment->is_paid = true;
-                    $payment->paid_on = date('Y-m-d');
-                    $payment->fee_payment_id = $feePayment->id;
-                    $payment->save();
-                }
+        foreach($payment_schedules as $payment) {
+            $feePayment = new FeePayment();
+            $feePayment->member_id = $payment->member_id;
+            $feePayment->fee_type = 'monthly';
+            $feePayment->pay_for_month = $payment->for_month;
+            $feePayment->amount = $payment->amount;
+            $feePayment->payment_date = date('Y-m-d');
+            $feePayment->payment_method = $inputs['payment_method'];
+            $feePayment->transaction_id = $inputs['transaction_id'];
+            $feePayment->notes = $inputs['note'] ?? '';
+            $feePayment->save();
+            if($feePayment->id) {
+                $payment->is_paid = true;
+                $payment->paid_on = date('Y-m-d');
+                $payment->fee_payment_id = $feePayment->id;
+                $payment->save();
+            } else {
+                return response()->json(['message' => 'Fee payment could not be processed.', 'status' => 'failed'], 200);
             }
         }
-
         return response()->json(['message' => 'Fee payment processed successfully.', 'data' => ['fee_payment' => $feePayment], 'status' => 'success'], 200);
     }
 
@@ -1141,9 +1113,10 @@ class AdminController extends Controller
 
     public function transferMembershipProcess(Request $request) {
         $inputs = $request->all();
+        $config = Config::first();
         $membership_transfer_log = MembershipTransferLog::where(['member_id' => $inputs['member_id']])->get();
-        if(count($membership_transfer_log) > 0) {
-            return response()->json(['message' => 'Membership has already been transferred once for this member. Multiple transfers are not allowed.', 'status' => 'failed'], 200);
+        if(count($membership_transfer_log) >= $config->membership_transfer_limit) {
+            return response()->json(['message' => 'Membership transfer limit reached.', 'status' => 'failed'], 200);
         }
         $memberdetail = MemberDetail::where(['user_id' => $inputs['member_id'], 'membership_type' => $inputs['current_membership_id']])->first();
         if(!$memberdetail) {
@@ -1157,13 +1130,22 @@ class AdminController extends Controller
         $old_membership_end_date = $memberdetail->membership_end_date;
 
         $fee_payment_schedules = FeePaymentSchedule::where(['member_id' => $inputs['member_id'], 'membership_type' => $inputs['current_membership_id']])->get();
+        $fee_payment_schedule_history = FeePaymentScheduleHistory::where(['member_id' => $inputs['member_id']])->get();
         $fee_payment_ids = [];
+
         foreach ($fee_payment_schedules as $schedule) {
             if($schedule->is_paid == 1 && ($schedule->fee_payment_id != null || $schedule->fee_payment_id != '')) {
                 $fee_payment_ids[] = $schedule->fee_payment_id;
             }
         }
         $fee_payments = FeePayment::whereIn('id', $fee_payment_ids)->get();
+
+        if(count($fee_payment_schedule_history) > 0) {
+            foreach ($fee_payment_schedule_history as $schedule_history) {
+                $schedule_history->latest = 0;
+                $schedule_history->save();
+            }
+        }
 
         $membership = Membership::find($inputs['transfer_to_membership_id']);
         $startDate = Carbon::parse($inputs['start_date']);
@@ -1197,7 +1179,8 @@ class AdminController extends Controller
                 'amount' => $schedule->amount,
                 'is_paid' => $schedule->is_paid,
                 'paid_on' => $schedule->paid_on,
-                'fee_payment_id' => $schedule->fee_payment_id
+                'fee_payment_id' => $schedule->fee_payment_id,
+                'latest' => 1
             ]);
         }
         foreach ($fee_payments as $payment) {
@@ -1282,13 +1265,14 @@ class AdminController extends Controller
             $schedule->delete();
         }
         // Set payment status in new fee schedule as per old payment status if adjust payment option selected
-        if($inputs['isAdjustPaymentChecked'] == 1) {
+        if($inputs['isAdjustPaymentChecked'] == 'true') {
             $fee_pay_schedule = FeePaymentSchedule::where(['member_id' => $inputs['member_id'], 'membership_type' => $membership_info->id])->get();
             foreach ($fee_pay_schedule as $sch) {
                 $old_fee_payment_schedule = FeePaymentScheduleHistory::where([
                     'member_id' => $sch->member_id,
                     'membership_type' => $old_membership_id,
-                    'for_month' => $sch->for_month
+                    'for_month' => $sch->for_month,
+                    'latest' => 1
                 ])->first();
                 if($old_fee_payment_schedule) {
                     $sch->is_paid = $old_fee_payment_schedule->is_paid;
@@ -1298,7 +1282,6 @@ class AdminController extends Controller
                 }
             }
         }
-
         // Add entry in membership transfer log
         MembershipTransferLog::create([
             'member_id' => $inputs['member_id'],

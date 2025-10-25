@@ -333,10 +333,11 @@
 }
 .member_search_card_desktop {
     display: block;
-    background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px; overflow: scroll;
+    background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px;
 }
 .member_search_card_mobile {
     display: none;
+    background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px;
 }
 #progressChartDisplayModal {
     width:100%; 
@@ -470,4 +471,43 @@
 .adjust_payment_checkbox {
     width: 18px;
     height: 18px;
+}
+.save_settings {
+    background-color: white;
+    color: #2341e7;
+    font-weight: bold;
+    border: 1px solid #2341e7;
+    padding: 8px 16px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.save_settings:hover {
+    background-color: #FCFCFC;
+}
+.memberSearchFeeCollection {
+    width:100%; 
+    padding:8px 12px; 
+    margin-bottom:12px; 
+    border:1px solid #ccc; 
+    border-radius:4px;
+}
+.memberSearchforkealthrec {
+    width:100%; 
+    padding:8px 12px; 
+    margin-bottom:12px; 
+    border:1px solid #ccc; 
+    border-radius:4px;
+}
+.memberSearchforAttendance {
+    width:100%; 
+    padding:8px 12px; 
+    margin-bottom:12px; 
+    border:1px solid #ccc; 
+    border-radius:4px;
+}
+.fee_collection_table {
+    border-collapse:collapse; 
+    width:100%; 
+    margin-bottom:1.25rem; 
+    border:1px solid #ddd;
 }

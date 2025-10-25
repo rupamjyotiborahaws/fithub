@@ -930,12 +930,12 @@ $(document).ready(function() {
                 });
         });
 
-        $('#memberSearchFeeCollection').on('input', function() {
+        $('.memberSearchFeeCollection').on('input', function() {
                 const query = $(this).val().toLowerCase();
                 const matchedMembers = total_members.filter(member => member.name.toLowerCase().includes(query) || 
                                        member.id.toString().includes(query) || 
                                        member.phone_no.includes(query));
-                const container = $('.matched_members');
+                const container = $('.matched_members_for_fee_collection');
                 container.empty();
                 if (query.length === 0) {
                         return;
@@ -959,14 +959,14 @@ $(document).ready(function() {
                                 $('.loadercontent').html('');
                                 $("#loader").hide();
                                 if(response && response.status === 'success' && response.data) {
-                                        $('.matched_members').empty();
+                                        $('.matched_members_for_fee_collection').empty();
                                         $('.pay_for_multiple_members').addClass('d-none');
                                         $('#instructions_list_fee_collection_1').text('Select the checkbox for the month for which fees to be paid.');
                                         $('#memberSearchFeeCollection').val('');
                                         const scheduleContainer = $('.fee_schedule');
                                         scheduleContainer.empty();
                                         let scheduleHtml = `<h5 class="attn_report_heading">Payment Schedule for <b>${response.data.membername}</b></h5><h6 style="color:red;">Check the boxes to pay fee</h6>`;
-                                        scheduleHtml += `<table style="width:100%; border-collapse:collapse; margin-top:12px;">
+                                        scheduleHtml += `<table class="fee_collection_table hide-scrollbar">
                                                 <thead>
                                                         <tr>
                                                                 <th class="fee_collection_filtered_table_thead_data">Month</th>
@@ -1020,7 +1020,9 @@ $(document).ready(function() {
 
         $(document).on('click', '.check_for_pay', function() {
                 $('.check_for_pay:checked').each(function() {
-                        selectedPayments.push($(this).val());
+                        if(!selectedPayments.includes($(this).val())) {
+                                selectedPayments.push($(this).val());
+                        }
                 });
         });
 
@@ -1093,6 +1095,7 @@ $(document).ready(function() {
         //Process fee payment
         $(document).on('click', '.proceed_payment', function(e) {
                 e.preventDefault();
+                console.log('Selected payments to process:', selectedPayments);
                 if(selectedPayments.length === 0) {
                         toastr.options.timeOut = 5000;
                         toastr.error("Select atleast one payment to process");
@@ -1178,18 +1181,18 @@ $(document).ready(function() {
         });
 
         //Save config settings
-        $('.save_config').click(function(e) {
+        $(document).on('click', '.save_settings', function(e) {
                 e.preventDefault();
                 $('.loadercontent').html('Saving configuration, please wait...');
                 $("#loader").show();
-                const registrationFee = $('#registrationFee').val();
-                const monthlyFee = $('#monthlyFee').val();
+                const membership_renewal_reminder = $('#membership_renewal_reminder').val();
+                const membership_transfer_limit = $('#membership_transfer_limit').val();
                 $.ajax({
                         url: baseUrl + '/api/save_config',
                         method: 'POST',
                         data: {
-                                registration_fee: registrationFee,
-                                monthly_fee: monthlyFee
+                                membership_renewal_reminder: membership_renewal_reminder,
+                                membership_transfer_limit: membership_transfer_limit
                         },
                         success: function(response) {
                                 $('.loadercontent').html('');
@@ -1206,7 +1209,7 @@ $(document).ready(function() {
                 });
         });
 
-        $('#memberSearchforkealthrec').on('input', function() {
+        $('.memberSearchforkealthrec').on('input', function() {
                 const query = $(this).val().toLowerCase();
                 const matchedMembers = total_members_health.filter(member => member.name.toLowerCase().includes(query));
                 const container = $('.matched_members_health_rec');
@@ -1295,7 +1298,7 @@ $(document).ready(function() {
                 });
         });
 
-        $('#memberSearchforAttendance').on('input', function() {
+        $('.memberSearchforAttendance').on('input', function() {
                 const query = $(this).val().toLowerCase();
                 const matchedMembers = total_members_attn.filter(member => member.name.toLowerCase().includes(query));
                 const container = $('.matched_members_attendance');
