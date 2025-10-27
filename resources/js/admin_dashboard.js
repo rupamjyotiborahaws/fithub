@@ -8,10 +8,15 @@ window.toastr = toastr;
 // Optionally import Toastr CSS too
 import 'toastr/build/toastr.min.css';
 
+import QRCode from 'qrcode';
+window.QRCode = QRCode;
+
 $(document).ready(function() {
         $("#loader").hide();
         let selectedPayments = [];
+        let total_payable_amount = 0;
         let selectedMembersPayments = [];
+        let currentSelectedMemberId = null; // Store current member ID for QR code generation
         let fee_collections_filter =  {
                 fee_month: 0,
                 membership_id: 0
@@ -762,10 +767,10 @@ $(document).ready(function() {
                 $('.time_schedule_edit').addClass('d-none');
         });
 
-        $('#memberSearch').on('input', function() {
+        $('.memberSearchInRegistration').on('input', function() {
                 const query = $(this).val().toLowerCase();
                 const matchedMembers = allMembers.filter(member => member.name.toLowerCase().includes(query));
-                const container = $('.matched_members');
+                const container = $('.matched_members_in_registration');
                 container.empty();
                 if (query.length === 0) {
                         return;
@@ -775,9 +780,16 @@ $(document).ready(function() {
                         return;
                 }
                 matchedMembers.forEach(member => {
-                        const memberDiv = `<div style="padding:8px; border-bottom:1px solid #ddd;"><a href="${member.id}" style="text-decoration:none;">${member.name}</a></div>`;
+                        const memberDiv = `<div style="padding:8px; border-bottom:1px solid #ddd;"><a class="member_link_reg" href="${member.id}" style="text-decoration:none;">${member.name}</a></div>`;
                         container.append(memberDiv);
                 });
+        });
+
+        $(document).on('click', '.member_link_reg', function(e) {
+                e.preventDefault();
+                const memberId = $(this).attr('href');
+                $('.memberSearchInRegistration').val('');
+                window.location.href = baseUrl + '/member/' + memberId;
         });
 
         // Handle edit button click to populate edit modal
@@ -874,7 +886,7 @@ $(document).ready(function() {
                                 <td class="membership_transfer_filtered_table_tbody_data">${item.is_transferable == 1 ? 
                                         `<input type="date" name="start_date" value="${item.membership_start_date}">
                                         ${adjust_payments}` : item.membership_start_date}</td>
-                                <td class="membership_transfer_filtered_table_tbody_data">${item.is_transferable == 1 ? transer_to_options : 'Can not be Transfered'}</td>
+                                <td class="membership_transfer_filtered_table_tbody_data">${item.is_transferable == 1 && item.payment_type == 'recurring' ? transer_to_options : 'Can not be Transfered'}</td>
                                 <td style="border:1px solid #ddd; padding:8px; width:10%;"><button class="transfer_membership_btn" 
                                 data-member-id="${item.id}" data-membership-id="${item.membership_type}">
                                 Transfer</button></td>`;
@@ -952,6 +964,7 @@ $(document).ready(function() {
 
         $(document).on('click', '.member_link', function() {
                 const memberId = $(this).data('id');
+                currentSelectedMemberId = memberId; // Store the selected member ID
                 $.ajax({
                         url: baseUrl + '/api/get_payment_schedule/' + memberId,
                         method: 'GET',
@@ -982,7 +995,7 @@ $(document).ready(function() {
                                                 scheduleHtml += `<tr>
                                                         <td class="fee_collection_filtered_table_tbody_data">${item.for_month}</td>
                                                         <td class="fee_collection_filtered_table_tbody_data">${item.due_date}</td>
-                                                        <td class="fee_collection_filtered_table_tbody_data">${item.amount}</td>`;
+                                                        <td class="fee_collection_filtered_table_tbody_data" id="fee_amount_${item.id}">${item.amount}</td>`;
                                                         if(response.data.membership.payment_type === 'single') {
                                                                 scheduleHtml += `<td class="fee_collection_filtered_table_tbody_data" style="text-align:center; color:${color};">
                                                                 ${item.is_paid ? `Paid </a>` : 'N/A'}</td>`;
@@ -1000,7 +1013,7 @@ $(document).ready(function() {
                                                 <button class="btn btn-success mt-3 process_payment" style="margin-bottom: 10px;">📄 Download Receipt
                                                 </button></a>`;
                                         } else {
-                                                scheduleHtml += `<a href="${baseUrl}/fee_collection"><button class="mt-3 back_to_fee_collection">BACK</button></a>
+                                                scheduleHtml += `<a href="${baseUrl}/fee_collection"><button class="mt-3 back_to_fee_collection" onclick="currentSelectedMemberId = null;">BACK</button></a>
                                                 <button class="mt-3 process_payment" data-bs-toggle="modal" data-bs-target="#feePaymentModal">Process Payment</button>`;
                                         }
                                         scheduleContainer.append(scheduleHtml);
@@ -1035,6 +1048,131 @@ $(document).ready(function() {
         $(document).on('click', '[data-bs-target="#feePaymentModal"]', function() {
                 const feePaymentModal = $('#feePaymentModal');
                 feePaymentModal.find('input[name="payment_ids"]').val(selectedPayments);
+                selectedPayments = Array.from(new Set(selectedPayments)); // Remove duplicates
+                selectedPayments.forEach(id => {
+                        const amount = $(`#fee_amount_${id}`).text();
+                        total_payable_amount += parseFloat(amount);
+                });
+        });
+
+        $(document).on('change', '#paymentMethod', function() {
+                if($(this).val() == 'upi') {
+                        // Check if a member is selected
+                        if(!currentSelectedMemberId) {
+                                toastr.options.timeOut = 5000;
+                                toastr.error("Please select a member first");
+                                $(this).val(''); // Reset dropdown
+                                return;
+                        }
+                        // Show loading message
+                        $('#qrCodeContainer').html('<div style="text-align: center; padding: 20px;"><p>Generating UPI QR Code, please wait...</p></div>');
+                        $.ajax({
+                                url: baseUrl + '/api/qr/' + currentSelectedMemberId,
+                                method: 'GET',
+                                dataType: 'json',
+                                data: {
+                                        selectedPayments: selectedPayments
+                                },
+                                success: function(response) {
+                                        console.log('UPI QR response:', response);
+                                        if(response && response.upi_url) {
+                                                // Clear the container
+                                                $('#qrCodeContainer').empty();
+                                                
+                                                // Create a canvas element for the QR code
+                                                const canvas = document.createElement('canvas');
+                                                canvas.id = 'qrCanvas';
+                                                canvas.style.display = 'block';
+                                                canvas.style.margin = '0 auto';
+                                                
+                                                // Create container div with styling
+                                                const qrContainer = document.createElement('div');
+                                                qrContainer.style.textAlign = 'center';
+                                                qrContainer.style.padding = '10px';
+                                                qrContainer.style.border = '2px solid #007bff';
+                                                qrContainer.style.borderRadius = '10px';
+                                                qrContainer.style.backgroundColor = '#f8f9fa';
+                                                qrContainer.style.marginBottom = '10px';
+                                                
+                                                // Add title
+                                                // const title = document.createElement('h6');
+                                                // title.textContent = 'Scan QR Code to Pay via UPI';
+                                                // title.style.marginBottom = '15px';
+                                                // title.style.color = '#007bff';
+                                                
+                                                // Add amount display
+                                                const amountInfo = document.createElement('p');
+                                                amountInfo.innerHTML = `<strong>Amount: ₹${total_payable_amount}</strong>`;
+                                                amountInfo.style.marginBottom = '10px';
+                                                amountInfo.style.fontSize = '16px';
+                                                
+                                                // Add member info
+                                                const memberInfo = document.createElement('p');
+                                                memberInfo.innerHTML = `<small>Payment for: ${response.member.name}</small>`;
+                                                memberInfo.style.marginBottom = '10px';
+                                                memberInfo.style.color = '#666';
+                                                
+                                                // Append elements
+                                                //qrContainer.appendChild(title);
+                                                qrContainer.appendChild(amountInfo);
+                                                qrContainer.appendChild(memberInfo);
+                                                qrContainer.appendChild(canvas);
+                                                
+                                                // Add instructions
+                                                const instructions = document.createElement('p');
+                                                instructions.innerHTML = '<small>Use any UPI app to scan and pay</small>';
+                                                instructions.style.marginTop = '10px';
+                                                instructions.style.color = '#666';
+                                                qrContainer.appendChild(instructions);
+                                                
+                                                $('#qrCodeContainer').append(qrContainer);
+                                                
+                                                // Generate QR code using the qrcode library
+                                                QRCode.toCanvas(canvas, response.upi_url, {
+                                                        width: 200,
+                                                        margin: 2,
+                                                        color: {
+                                                                dark: '#000000',
+                                                                light: '#FFFFFF'
+                                                        }
+                                                }, function (error) {
+                                                        if (error) {
+                                                                console.error('QR Code generation error:', error);
+                                                                $('#qrCodeContainer').html('<div style="text-align: center; color: red; padding: 20px;">Failed to generate QR Code</div>');
+                                                                toastr.options.timeOut = 5000;
+                                                                toastr.error("Failed to generate QR Code");
+                                                        } else {
+                                                                console.log('QR Code generated successfully');
+                                                        }
+                                                });
+                                        } else {
+                                                console.error('Invalid response format:', response);
+                                                $('#qrCodeContainer').html('<div style="text-align: center; color: red; padding: 20px;">Invalid response from server</div>');
+                                                toastr.options.timeOut = 5000;
+                                                toastr.error("Invalid response from server");
+                                        }
+                                },
+                                error: function(xhr, status, err) {
+                                        console.error('QR Code fetch error:', status, err, xhr.responseText);
+                                        $('#qrCodeContainer').html('<div style="text-align: center; color: red; padding: 20px;">Failed to fetch UPI details</div>');
+                                        toastr.options.timeOut = 5000;
+                                        toastr.error("Error fetching UPI QR Code");
+                                }
+                        });        
+                } else {
+                        // Clear QR code when payment method is not UPI
+                        $('#qrCodeContainer').empty();
+                }
+        });
+
+        $(document).on('click', '.check_pay_for_multiple_member', function() {
+                if($(this).is(':checked')) { 
+                        currentSelectedMemberId = $(this).val();
+                        $('.check_pay_for_multiple_member').not(this).prop('disabled', true);
+                } else {
+                        currentSelectedMemberId = null;
+                        $('.check_pay_for_multiple_member').prop('disabled', false);
+                }
         });
 
         $(document).on('click', '[data-bs-target="#multipleFeePaymentModal"]', function() {
@@ -1050,32 +1188,37 @@ $(document).ready(function() {
                                 htmlContent += `Payment details for member ID: <b>${id}</b><hr/>`;
                                 htmlContent += `<input type="hidden" name="payment_member_ids[]" value="${id}">`;
                                 htmlContent += `<div class="row">
-                                <div class="col-md-6 mb-3">
-                                        <label for="feeType" class="form-label">Fee Types</label>
-                                        <select class="form-select" id="feeType" name="type[]" required>
-                                        <option value="monthly">Monthly</option>
-                                        </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                        <label for="paymentMethod" class="form-label">Payment Method</label>
-                                        <select class="form-select" id="paymentMethod" name="payment_method[]" required>
-                                        <option value="">Select Payment Method</option>
-                                        <option value="cash">Cash</option>
-                                        <option value="upi">UPI</option>
-                                        </select>
-                                </div>
-                                </div>
-                                <div class="row">
-                                <div class="col-md-12 mb-3">
-                                        <label for="transactionId" class="form-label">UPI Transaction ID</label>
-                                        <input type="text" class="form-control" id="transactionId" name="transaction_id[]" required>
-                                </div>
+                                        <div class="col-md-6 mb-3">
+                                                <label for="feeType" class="form-label">Fee Types</label>
+                                                <select class="form-select" id="feeType" name="type[]" required>
+                                                <option value="monthly">Monthly</option>
+                                                </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                                <label class="form-label">Payment Method</label>
+                                                <select class="form-select paymentMethodforMember" name="payment_method[]" required>
+                                                        <option value="0">Select Payment Method</option>
+                                                        <option value="cash">Cash</option>
+                                                        <option value="upi">UPI</option>
+                                                </select>
+                                        </div>
                                 </div>
                                 <div class="row">
-                                <div class="col-md-12 mb-3">
-                                        <label for="note" class="form-label">Note</label>
-                                        <textarea class="form-control" id="note" name="note[]" rows="3" placeholder="Additional notes about the payment"></textarea>
+                                        <div class="col-md-12 mb-3">
+                                                <div id="qrCodeContainerMultiple"></div>
+                                        </div>
                                 </div>
+                                <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                                <label for="transactionId" class="form-label">UPI Transaction ID</label>
+                                                <input type="text" class="form-control" id="transactionId" name="transaction_id[]" required>
+                                        </div>
+                                </div>
+                                <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                                <label for="note" class="form-label">Note</label>
+                                                <textarea class="form-control" id="note" name="note[]" rows="3" placeholder="Additional notes about the payment"></textarea>
+                                        </div>
                                 </div>`;
                         });
                         $('.process_multiple_payment').removeClass('d-none');
@@ -1083,9 +1226,114 @@ $(document).ready(function() {
                 feePaymentModal.find('.members_payment_info').html(htmlContent);
         });
 
+        $(document).on('change', '.paymentMethodforMember', function(e) {
+                e.preventDefault();
+                console.log('Payment method changed for member payment');
+                if($(this).val() == 'upi') {
+                        // Check if a member is selected
+                        if(!currentSelectedMemberId) {
+                                toastr.options.timeOut = 5000;
+                                toastr.error("Please select a member first");
+                                $(this).val(''); // Reset dropdown
+                                return;
+                        }
+                        // Show loading message
+                        $('#qrCodeContainerMultiple').html('<div style="text-align: center; padding: 20px;"><p>Generating UPI QR Code, please wait...</p></div>');
+                        $.ajax({
+                                url: baseUrl + '/api/member/qr/' + currentSelectedMemberId,
+                                method: 'GET',
+                                dataType: 'json',
+                                success: function(response) {
+                                        console.log('UPI QR response:', response);
+                                        if(response && response.upi_url) {
+                                                // Clear the container
+                                                $('#qrCodeContainerMultiple').empty();
+                                                
+                                                // Create a canvas element for the QR code
+                                                const canvas = document.createElement('canvas');
+                                                canvas.id = 'qrCanvas';
+                                                canvas.style.display = 'block';
+                                                canvas.style.margin = '0 auto';
+                                                
+                                                // Create container div with styling
+                                                const qrContainer = document.createElement('div');
+                                                qrContainer.style.textAlign = 'center';
+                                                qrContainer.style.padding = '10px';
+                                                qrContainer.style.border = '2px solid #007bff';
+                                                qrContainer.style.borderRadius = '10px';
+                                                qrContainer.style.backgroundColor = '#f8f9fa';
+                                                qrContainer.style.marginBottom = '10px';
+                                                
+                                                // Add amount display
+                                                const amountInfo = document.createElement('p');
+                                                amountInfo.innerHTML = `<strong>Amount: ₹${response.amount}</strong>`;
+                                                amountInfo.style.marginBottom = '10px';
+                                                amountInfo.style.fontSize = '16px';
+                                                
+                                                // Add member info
+                                                const memberInfo = document.createElement('p');
+                                                memberInfo.innerHTML = `<small>Payment for: ${response.member.name}</small>`;
+                                                memberInfo.style.marginBottom = '10px';
+                                                memberInfo.style.color = '#666';
+                                                
+                                                // Append elements
+                                                qrContainer.appendChild(amountInfo);
+                                                qrContainer.appendChild(memberInfo);
+                                                qrContainer.appendChild(canvas);
+                                                
+                                                // Add instructions
+                                                const instructions = document.createElement('p');
+                                                instructions.innerHTML = '<small>Use any UPI app to scan and pay</small>';
+                                                instructions.style.marginTop = '10px';
+                                                instructions.style.color = '#666';
+                                                qrContainer.appendChild(instructions);
+                                                
+                                                $('#qrCodeContainerMultiple').append(qrContainer);
+                                                
+                                                // Generate QR code using the qrcode library
+                                                QRCode.toCanvas(canvas, response.upi_url, {
+                                                        width: 200,
+                                                        margin: 2,
+                                                        color: {
+                                                                dark: '#000000',
+                                                                light: '#FFFFFF'
+                                                        }
+                                                }, function (error) {
+                                                        if (error) {
+                                                                console.error('QR Code generation error:', error);
+                                                                $('#qrCodeContainerMultiple').html('<div style="text-align: center; color: red; padding: 20px;">Failed to generate QR Code</div>');
+                                                                toastr.options.timeOut = 5000;
+                                                                toastr.error("Failed to generate QR Code");
+                                                        } else {
+                                                                console.log('QR Code generated successfully');
+                                                        }
+                                                });
+                                        } else {
+                                                console.error('Invalid response format:', response);
+                                                $('#qrCodeContainerMultiple').html('<div style="text-align: center; color: red; padding: 20px;">Invalid response from server</div>');
+                                                toastr.options.timeOut = 5000;
+                                                toastr.error("Invalid response from server");
+                                        }
+                                },
+                                error: function(xhr, status, err) {
+                                        console.error('QR Code fetch error:', status, err, xhr.responseText);
+                                        $('#qrCodeContainerMultiple').html('<div style="text-align: center; color: red; padding: 20px;">Failed to fetch UPI details</div>');
+                                        toastr.options.timeOut = 5000;
+                                        toastr.error("Error fetching UPI QR Code");
+                                }
+                        });        
+                } else {
+                        // Clear QR code when payment method is not UPI
+                        $('#qrCodeContainerMultiple').empty();
+                }
+        });
+
         // Clear selectedPayments array when feePaymentModal is closed
         $('#feePaymentModal').on('hidden.bs.modal', function() {
                 selectedPayments = [];
+                $('#qrCodeContainer').empty(); // Clear QR code when modal is closed
+                $('#paymentMethod').val(''); // Reset payment method dropdown
+                total_payable_amount = 0; // Reset total payable amount
         });
 
         $('#multipleFeePaymentModal').on('hidden.bs.modal', function() {

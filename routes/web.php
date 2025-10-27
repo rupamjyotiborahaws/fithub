@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AdminController;
 Route::middleware(['client_settings'])->group(function () {
     Route::get('/', [AuthController::class, 'index'])->name('index');
     Route::post('login', [AuthController::class, 'login'])->name('login');
+    Route::get('password/reset', [AuthController::class, 'showLinkRequestForm'])->name('password.request');
 });
 
 Route::middleware(['check_authentication', 'client_settings'])->group(function () {

@@ -17,12 +17,8 @@
                 </div>
             </div>
             <div class="card member_search_card member_search_card_mobile">
-                <div>
                     <input type="text" class="memberSearchforkealthrec" placeholder="Search Members..." />
-                </div>
-                <div class="matched_members_health_rec" style="max-height:300px; overflow:auto;">
-                    
-                </div>
+                <div class="matched_members_health_rec" style="max-height:200px; overflow:auto;"></div>
             </div>
             <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 700px; overflow: scroll;">
                 <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Progress Record Entry for Members</h5>

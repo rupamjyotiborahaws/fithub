@@ -7,16 +7,6 @@
     .w-100 { width:100%; }
     .mb-2 { margin-bottom:.75rem; }
     .mb-4 { margin-bottom:1.25rem; }
-    .btn-primary {
-        background:#2563eb;
-        color:#fff;
-        border:none;
-        padding:10px 14px;
-        cursor:pointer;
-        border-radius:4px;
-        font-weight:600;
-    }
-    .btn-primary:hover { background:#1d4ed8; }
     input, select {
         padding:8px;
         border:1px solid #ccc;
@@ -28,9 +18,6 @@
         border-color:#2563eb;
         box-shadow:0 0 0 1px #2563eb33;
     }
-    .alert { padding:10px 14px; border-radius:4px; }
-    .alert-success { background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0; }
-    .alert-danger { background:#fef2f2;color:#991b1b;border:1px solid #fecaca; }
 </style>
 <div class="container-fluid mx-auto py-6">
     <div class="row">
@@ -181,12 +168,8 @@
         <div class="col-md-3">
             {{-- Search Members --}}
             <div class="card hide-scrollbar member_search_card">
-                <div style="height:50px;">
-                    <input type="text" id="memberSearch" placeholder="Search Members..." class="w-100 mb-4">
-                </div>
-                <div class="matched_members" style="max-height:300px; overflow:auto;">
-                    
-                </div>
+                <input type="text" class="memberSearchInRegistration" placeholder="Search Members...">
+                <div class="matched_members_in_registration" style="max-height:200px; overflow:auto;"></div>
             </div>
             {{-- Recent Members --}}
             <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">

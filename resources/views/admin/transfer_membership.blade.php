@@ -4,32 +4,6 @@
 
 @section('content')
 
-<style>
-    /* Custom styles for the fee collection page */
-    .matched_members {
-        max-height: 200px;
-        overflow-y: auto;
-        margin-bottom: 12px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        padding: 8px;
-    }
-    .matched_members div {
-        padding: 8px 12px;
-        border-bottom: 1px solid #eee;
-        cursor: pointer;
-    }
-    .matched_members div:hover {
-        background-color: #f5f5f5;
-    }
-    .fee_schedule {
-        height: 900px;
-        overflow-y: auto;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        padding: 12px;
-    }
-</style>
 @php
     use Carbon\Carbon;
     $currentMonth = Carbon::now()->format('M Y'); // Changed from 'Y-m' to
@@ -38,22 +12,15 @@
         $months->push(Carbon::now()->subMonths($i)->format('M Y'));
     }
 @endphp
+
 <div class="container-fluid mx-auto py-6" style="min-height: 75vh;">
     <div class="row">
         <div class="col-md-12 mb-4">
             {{-- Membership Transfer --}}
-            <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; height: 800px;">
-                <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Membership Transfer</h5>
-                <input type="text" id="memberSearchMembershipTransfer" placeholder="Search by Member ID, Name, or Phone No">
-                <div class="matched_members_transfer">
-
-                </div>
-                <div class="card" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; height: 800px; overflow:scroll;">
-                    <div class="membership_transfer_details">
-
-                    </div>
-                </div>
-            </div>
+            <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Membership Transfer</h5>
+            <input type="text" id="memberSearchMembershipTransfer" placeholder="Search by Member ID, Name, or Phone No">
+            <div class="matched_members_transfer hide-scrollbar"></div>
+            <div class="card membership_transfer_details"></div>
         </div>
     </div>
 </div>

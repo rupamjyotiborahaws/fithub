@@ -7,7 +7,7 @@
     <div class="row">
         <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12 mb-4">
             <div>
-                <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Trainer Allotment</h5>     
+                <h5 style="margin:0 0 12px;" class="font-semibold mb-1">Trainer Allotment</h5>     
             </div>
         </div>
         <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12 mb-4">

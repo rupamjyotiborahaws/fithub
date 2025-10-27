@@ -5,14 +5,10 @@
 @section('content')
 <div class="container-fluid mx-auto py-6">
     <div class="row mb-6">
-        <div class="col-md-12">
-            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; margin-bottom:10px;">
-                <div>
-                    <input type="text" id="memberSearch" placeholder="Search Members..." class="w-100 mb-4 p-2 border rounded" style="border:1px solid #ccc; border-radius:4px; padding:8px;" />
-                </div>
-                <div class="matched_members" style="max-height:300px; overflow:auto;">
-                    
-                </div>
+        <div class="col-12">
+            <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:15px; margin-bottom:2px;">
+                <input type="text" id="memberSearch" placeholder="Search Members..." style="border:1px solid #ccc; border-radius:4px; padding:8px;" />
+                <div class="matched_members" style="max-height:200px; overflow:auto;"></div>
             </div>
         </div>
     </div>

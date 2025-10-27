@@ -2,6 +2,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\QrPaymentController;
 
 
 /*
@@ -37,3 +38,5 @@ Route::get('get_attendance_report/{member_id}', [AdminController::class, 'getAtt
 Route::get('today_attendance', [AdminController::class, 'todayAttendance']);
 Route::get('fetch_member_progress/{member_id}/{metric}', [AdminController::class, 'fetchMemberProgress']);
 Route::post('transfer_membership', [AdminController::class, 'transferMembershipProcess']);
+Route::get('qr/{member}', [QrPaymentController::class, 'show'])->name('members.qr');
+Route::get('member/qr/{member}', [QrPaymentController::class, 'show_member_wise'])->name('members.qr');

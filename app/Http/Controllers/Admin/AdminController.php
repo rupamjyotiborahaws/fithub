@@ -1105,7 +1105,8 @@ class AdminController extends Controller
                     ->join('memberdetails', 'users.id', '=', 'memberdetails.user_id')
                     ->join('memberships', 'memberdetails.membership_type', '=', 'memberships.id')
                     ->select('users.id', 'users.name', 'users.phone_no', 'memberdetails.membership_type', 'memberdetails.membership_start_date', 
-                             'memberships.type as membership_name', 'memberships.is_transferable as is_transferable')
+                             'memberships.type as membership_name', 'memberships.is_transferable as is_transferable', 
+                             'memberships.payment_type as payment_type')
                     ->get();
         $transferable_memberships=Membership::where(['is_transferable' => 1, 'is_active' => 1])->get();
         return view('admin.transfer_membership', compact('client_settings', 'members', 'transferable_memberships'));

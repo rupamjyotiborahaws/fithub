@@ -26,6 +26,7 @@
             'resources/css/mobile.css'
     ])
     {{-- Scripts --}}
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     @vite(['resources/js/app.js',
            'resources/js/jquery-3.7.1.min.js',
            'resources/js/toastr.min.js',
@@ -64,7 +65,7 @@
                                     <div class="py-1">
                                         <a href="{{ route('member.registration') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">New Registration</a>
                                         <a href="{{ route('member.progress_tracker') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Progress Tracker</a>
-                                        <a href="{{ route('member.allot_trainer') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Allot Trainer</a>
+                                        <a href="{{ route('member.allot_trainer') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Trainer Allotment</a>
                                         <a href="{{ route('member.transfer_membership') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Transfer Membership</a>
                                     </div>
                                 </div>
@@ -187,7 +188,7 @@
                                 <div id="mobile-member-menu" class="hidden pl-6 space-y-1">
                                     <a href="{{ route('member.registration') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">New Registration</a>
                                     <a href="{{ route('member.progress_tracker') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Progress Tracker</a>
-                                    <a href="{{ route('member.allot_trainer') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Allot Trainer</a>
+                                    <a href="{{ route('member.allot_trainer') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Trainer Allotment</a>
                                     <a href="{{ route('member.transfer_membership') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Transfer Membership</a>
                                 </div>
                             </div>

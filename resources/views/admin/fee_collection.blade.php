@@ -65,7 +65,7 @@
                     </table>
                 </div>
                 <div style="text-align: right; margin-top: 12px;">
-                    <button class="pay_for_multiple_members" id="pay_for_multiple_members_btn" data-bs-toggle="modal" data-bs-target="#multipleFeePaymentModal">Pay for Selected Members</button>
+                    <button class="pay_for_multiple_members" id="pay_for_multiple_members_btn" data-bs-toggle="modal" data-bs-target="#multipleFeePaymentModal">Proceed Payment</button>
                 </div>    
             </div>
         </div>
@@ -131,6 +131,13 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12 mb-3">
+                            <div id="qrCodeContainer">
+                                <!-- QR Code will be dynamically inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
                             <label for="transactionId" class="form-label">UPI Transaction ID</label>
                             <input type="text" class="form-control" id="transactionId" name="transaction_id" required>
                         </div>
@@ -143,8 +150,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary proceed_payment">Proceed Payment</button>
+                    <button type="submit" class="proceed_payment">Proceed Payment</button>
                 </div>
             </form>
         </div>
@@ -161,9 +167,7 @@
             <form action="" method="POST">
                 @csrf
                 <div class="modal-body">
-                    <div class="members_payment_info">
-                        
-                    </div>
+                    <div class="members_payment_info"></div>
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="process_multiple_payment proceed_payment_multiple d-none">Proceed Payment</button>
@@ -174,50 +178,5 @@
 </div>
 <script>
     const total_members = @json($allMembers ?? []);
-    console.log('Total Members in Fee Collection:', total_members);
-    // Backup chart creation function
-    // function createSimpleChart() {
-    //     const canvas = document.getElementById('currentMonthFeeCollectionChart');
-    //     if (!canvas) {
-    //         console.error('Canvas not found');
-    //         return;
-    //     }
-    //     try {
-    //         // Test with simple hardcoded data first
-    //         const testChart = new Chart(canvas, {
-    //             type: 'pie',
-    //             data: {
-    //                 labels: ['Paid', 'Unpaid'],
-    //                 datasets: [{
-    //                     data: [1000, 500],
-    //                     backgroundColor: ['#28a745', '#dc3545']
-    //                 }]
-    //             },
-    //             options: {
-    //                 responsive: true,
-    //                 maintainAspectRatio: false
-    //             }
-    //         });
-    //     } catch (error) {
-    //         console.error('Error creating test chart:', error);
-    //     }
-    // }
-    
-    // // Initialize fee collection chart when page loads
-    // document.addEventListener('DOMContentLoaded', function() {
-    //     $('.check_pay_for_multiple_member:checked').each(function() {
-    //         $(this).prop('checked', false);
-    //     });
-    //     const chartElement = document.getElementById('currentMonthFeeCollectionChart');
-    //     // First try to load with our function
-    //     if (chartElement && typeof window.loadCurrentMonthFeeCollectionData === 'function') {
-    //         setTimeout(function() {
-    //             window.loadCurrentMonthFeeCollectionData();
-    //         }, 1000);
-    //     } else {
-    //         // Fallback to simple chart
-    //         setTimeout(createSimpleChart, 1500);
-    //     }
-    // });
 </script>
 @endsection

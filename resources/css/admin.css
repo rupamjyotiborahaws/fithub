@@ -319,7 +319,7 @@
     background:#fff;
     border:1px solid #ddd;
     border-radius:8px;
-    padding:18px; 
+    padding:15px; 
     margin-bottom:10px;
 }
 .schedule_time_selection {
@@ -492,11 +492,7 @@
     border-radius:4px;
 }
 .memberSearchforkealthrec {
-    width:100%; 
-    padding:8px 12px; 
-    margin-bottom:12px; 
-    border:1px solid #ccc; 
-    border-radius:4px;
+    width:100%; padding:8px 12px; margin-bottom:1px; border:1px solid #ccc; border-radius:4px;
 }
 .memberSearchforAttendance {
     width:100%; 
@@ -506,8 +502,27 @@
     border-radius:4px;
 }
 .fee_collection_table {
-    border-collapse:collapse; 
-    width:100%; 
-    margin-bottom:1.25rem; 
-    border:1px solid #ddd;
+    border-collapse:collapse; width:100%; margin-bottom:1.25rem; border:1px solid #ddd;
+}
+.matched_members_transfer {
+    max-height: 200px; overflow-y: scroll;
+}
+.membership_transfer_details {
+    background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; height: 600px;
+}
+.memberSearchInRegistration {
+    width:100%; padding:8px 12px; margin-bottom:1px; border:1px solid #ccc; border-radius:4px;    
+}
+.qrCodeContainer {
+    height: 150px;
+    width: 150px;
+}
+.proceed_payment {
+    background-color: white;
+    color: #2341e7;
+    font-weight: bold;
+    border: 1px solid #2341e7;
+    padding: 8px 16px;  
+    border-radius: 4px;
+    cursor: pointer;
 }

@@ -30,4 +30,24 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
         return redirect('/')->with('success', 'Logged out successfully.');
     }
+
+    public function showLinkRequestForm(Request $request)
+    {
+        $client_settings = $request->client_settings;
+        $email = $client_settings['email'] ?? '';
+        $masked_email = '';
+        if (!empty($email)) {
+            $email_parts = explode('@', $email);
+            $local_part = $email_parts[0];
+            $domain_part = $email_parts[1];
+            $local_length = strlen($local_part);
+            if ($local_length <= 2) {
+                $masked_email = str_repeat('*', $local_length) . '@' . $domain_part;
+            } else {
+                $masked_email = substr($local_part, 0, 1) . str_repeat('*', $local_length - 2) . substr($local_part, -1) . '@' . $domain_part;
+            }
+        }
+        $email = $masked_email;
+        return view('admin.forgot_password', compact('client_settings', 'email'));
+    }
 }

@@ -125,11 +125,41 @@ svg {
 .hide-scrollbar::-webkit-scrollbar {
     display: none;  /* Safari and Chrome */
 }
+.version_display {
+    float: right;
+    font-size: 14px;
+}
+.forgot_pwd_display {
+    float: left;
+    font-size: 14px;
+    text-decoration: none;
+}
+.back_to_login {
+    background-color: white;
+    color: #007bff;
+    padding: 10px 20px;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+}
+.back_to_login:hover {
+    background-color: #007bff;
+    color: white;
+}
+.back_to_login_btn {
+    margin-left: 41%; position: relative;
+}
 
 @media (max-width: 480px) {
     .login_btn {
         padding: 10px 20px;
         margin-left: 38%;
         position: relative;
+    }
+    .back_to_login_btn {
+        margin-left: 34%; position: relative;
     }
 }
