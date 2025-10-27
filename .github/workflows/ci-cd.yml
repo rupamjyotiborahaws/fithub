@@ -23,4 +23,7 @@ jobs:
             cd /var/www/html/fithub
             git pull origin main
             php artisan migrate --force
+            npm install qrcode
+            composer require simplesoftwareio/simple-qrcode
+            composer require aws/aws-sdk-php:^3.0
             npm run build
