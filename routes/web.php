@@ -17,6 +17,7 @@ Route::middleware(['check_authentication', 'client_settings'])->group(function (
     Route::get('member/registration', [AdminController::class, 'memberRegistration'])->name('member.registration');
     Route::get('member/allot_trainer', [AdminController::class, 'memberAllotTrainer'])->name('member.allot_trainer');
     Route::get('member/transfer_membership', [AdminController::class, 'transferMembership'])->name('member.transfer_membership');
+    Route::get('member/renew/membership', [AdminController::class, 'memberRenewMembership'])->name('member.renew_membership');
     Route::get('member/{id}', [AdminController::class, 'memberShow'])->name('member.show');
     Route::get('client', [AdminController::class, 'getClient'])->name('get_client');
     Route::get('memberships', [AdminController::class, 'getMemberships'])->name('get_memberships');

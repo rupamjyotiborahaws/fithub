@@ -138,4 +138,10 @@
     .input_schedule_time {
         width: 60%;
     }
+    .membership_transfer_head{
+        font-size: 14px;
+    }
+    .membership_transfer_data {
+        font-size: 14px;
+    }
 }

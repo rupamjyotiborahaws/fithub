@@ -20,6 +20,8 @@ use App\Models\FeePaymentScheduleHistory;
 use App\Models\FeePaymentHistory;
 use App\Models\TransferMembership;
 use App\Models\MembershipTransferLog;
+use App\Models\FeePaymentScheduleArchive;
+use App\Models\RenewalHistory;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -234,19 +236,6 @@ class AdminController extends Controller
     }
 
     public function registerMember(Request $request) {
-        \Log::info($request->all());
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'address' => 'required|string|max:500',
-            'phone' => 'required|string|max:10',
-            'dob' => 'required|date',
-            'gender' => 'required|string|in:m,f,o',
-            'membership_type' => 'required|exists:memberships,id',
-            'membership_start_date' => 'required|date',
-            'emergency_contact_name' => 'nullable|string|max:255',
-            'emergency_contact_phone' => 'nullable|string|max:10'
-        ]);
         // Logic to create user and member profile goes here
         $user = new User();
         $user->name = $request->name;
@@ -1337,5 +1326,133 @@ class AdminController extends Controller
             'attendance' => [$checked_in_members, $total_members - $checked_in_members]
         ];
         return response()->json($data);
+    }
+
+    public function membershipRenewalAlert() {
+        $upcoming_renewals = [];
+        $config = Config::first();
+        $next_n_days = Carbon::now()->addDays($config->membership_renewal_reminder)->toDateString();
+        $members_to_renew = MemberDetail::where('membership_end_date', '<=', $next_n_days)
+                            ->where('membership_end_date', '>=', date('Y-m-d'))
+                            ->get();
+        foreach ($members_to_renew as $member_detail) {
+            $member = User::where(['id' => $member_detail->user_id, 'isAdmin' => 0])->first();
+            $membership = Membership::where(['id' => $member_detail->membership_type])->first();
+            if($member && $membership) {
+                $upcoming_renewals[] = [
+                    'member_name' => $member->name,
+                    'member_id' => $member->id,
+                    'membership_id' => $membership->id,
+                    'membership_type' => $membership->type,
+                    'membership_end_date' => $member_detail->membership_end_date
+                ];
+            }
+        }
+        return response()->json(['data' => $upcoming_renewals, 'status' => 'success'], 200);
+    }
+
+    public function memberRenewMembership(Request $request) {
+        $client_settings = $request->client_settings;
+        $next_n_days = Carbon::now()->addDays($client_settings->membership_renewal_reminder)->toDateString();
+        $members=User::where(['isAdmin' => 0])
+                    ->join('memberdetails', 'users.id', '=', 'memberdetails.user_id')
+                    ->join('memberships', 'memberdetails.membership_type', '=', 'memberships.id')
+                    ->select('users.id', 'users.name', 'users.phone_no', 'memberdetails.membership_type', 'memberdetails.membership_start_date', 
+                             'memberdetails.membership_end_date', 'memberships.type as membership_name')
+                    ->get();
+        $member_details = [];
+        foreach ($members as $key => $member) {
+            $renew_flag = 0;
+            if($member->membership_end_date < date('Y-m-d')) {
+                $renew_flag = 1;
+            }
+            $member_details[] = [
+                'member_id' => $member->id,
+                'member_name' => $member->name,
+                'phone_no' => $member->phone_no,
+                'membership_id' => $member->membership_type,
+                'membership_name' => $member->membership_name,
+                'membership_start_date' => $member->membership_start_date,
+                'membership_end_date' => $member->membership_end_date,
+                'renew_action' => $renew_flag
+            ];
+        }
+        return view('admin.membership_renewal', compact('client_settings', 'member_details'));
+    }
+
+    public function renewMembership(Request $request) {
+        $inputs = $request->all();
+        $member_id = $inputs['member_id'];
+        $membership_id = $inputs['membership_id'];
+        $memberdetail = MemberDetail::where(['user_id' => $member_id, 'membership_type' => $membership_id])->first();
+        if(!$memberdetail) {
+            return response()->json(['message' => 'Member details not found.', 'status' => 'failed'], 200);
+        }
+        $membership = Membership::where(['id' => $membership_id])->first();
+        if(!$membership) {
+            return response()->json(['message' => 'Membership not found.', 'status' => 'failed'], 200);
+        }
+        $startDate = date('Y-m-d', strtotime($memberdetail->membership_end_date) + 86400);
+        $membership_end_date = date('Y-m-d', strtotime($startDate . ' + ' . $membership->duration_months . ' months'));
+        $memberdetail_update['membership_start_date'] = $startDate;
+        $memberdetail_update['membership_end_date'] = $membership_end_date;
+        $fee_schedule = FeePaymentSchedule::where(['member_id' => $member_id, 'membership_type' => $membership_id])->get();
+        foreach ($fee_schedule as $sch) {
+            $fee_schedule_archive = new FeePaymentScheduleArchive();
+            $fee_schedule_archive->member_id = $sch->member_id;
+            $fee_schedule_archive->membership_type = $sch->membership_type;
+            $fee_schedule_archive->for_month = $sch->for_month;
+            $fee_schedule_archive->due_date = $sch->due_date;
+            $fee_schedule_archive->amount = $sch->amount;
+            $fee_schedule_archive->is_paid = $sch->is_paid;
+            $fee_schedule_archive->paid_on = $sch->paid_on;
+            $fee_schedule_archive->fee_payment_id = $sch->fee_payment_id;
+            $fee_schedule_archive->save();
+            $sch->delete();
+        }
+        // Add new fee schedule records for renewed membership
+        $total_months = $membership->duration_months;
+        $payment_type = $membership->payment_type;
+        $monthly_fee = $membership->monthly_fee;
+        $one_time_fee = $membership->one_time_fee;
+        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        // Insert first record in payment schedule table
+        $current_month = $startDate;
+        $current_fee_day = date('d', strtotime($current_month));
+        $current_fee_month = date('m', strtotime($current_month));
+        $current_fee_year = date('Y', strtotime($current_month));
+        $current_month = Carbon::create($current_fee_year, $current_fee_month, $current_fee_day)->toDateString();
+        $feeSchedule = new FeePaymentSchedule();
+        $feeSchedule->member_id = $member_id;
+        $feeSchedule->membership_type = $membership->id;
+        $feeSchedule->for_month = $months[$current_fee_month - 1]." ".$current_fee_year;
+        $feeSchedule->due_date = $current_month;
+        $feeSchedule->amount = $monthly_fee;
+        $feeSchedule->is_paid = $payment_type == 'single' ? true : false;
+        $feeSchedule->save();
+        if($total_months > 0) {
+            for($month = 1; $month <= $total_months - 1; $month++) {
+                $next_month = date('Y-m-d', strtotime($startDate . ' + ' . $month . ' months'));
+                $next_fee_day = date('d', strtotime($next_month));
+                $next_fee_month = date('m', strtotime($next_month));
+                $next_fee_year = date('Y', strtotime($next_month));
+                $feeSchedule = new FeePaymentSchedule();
+                $feeSchedule->member_id = $member_id;
+                $feeSchedule->membership_type = $membership->id;
+                $feeSchedule->for_month = $months[$next_fee_month - 1]." ".$next_fee_year;
+                $feeSchedule->due_date = $next_month;
+                $feeSchedule->amount = $monthly_fee;
+                $feeSchedule->is_paid = $payment_type == 'single' ? true : false;
+                $feeSchedule->save();
+            }
+        }
+        MemberDetail::where(['user_id' => $member_id, 'membership_type' => $membership_id])->update($memberdetail_update);
+        RenewalHistory::create([
+            'member_id' => $member_id,
+            'old_membership_id' => $membership_id,
+            'new_membership_id' => $membership->id,
+            'renewal_date' => now()
+        ]);
+        return response()->json(['message' => 'Membership renewed successfully.', 'status' => 'success'], 200); 
     }
 }

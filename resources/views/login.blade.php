@@ -37,10 +37,10 @@
                         </div>
                         <button type="submit" class="login_btn">Login</button>
                         <div class="row mt-2">
-                            <div class="col-6">
-                                <a class="forgot_pwd_display" href="{{ route('password.request') }}">Forgot Password?</a>
+                            <div class="col-md-6">
+                                <a class="forgot_pwd_display" href="#">Forgot Password?</a>
                             </div>
-                            <div class="col-6">
+                            <div class="col-md-6">
                                 <p class="version_display">Version : {{ config('appinfo.version.0') }}</p>
                             </div>
                         </div>

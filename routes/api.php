@@ -40,3 +40,5 @@ Route::get('fetch_member_progress/{member_id}/{metric}', [AdminController::class
 Route::post('transfer_membership', [AdminController::class, 'transferMembershipProcess']);
 Route::get('qr/{member}', [QrPaymentController::class, 'show'])->name('members.qr');
 Route::get('member/qr/{member}', [QrPaymentController::class, 'show_member_wise'])->name('members.qr');
+Route::get('membership_renewal_alert', [AdminController::class, 'membershipRenewalAlert']);
+Route::post('renew_membership', [AdminController::class, 'renewMembership']);

@@ -526,3 +526,37 @@
     border-radius: 4px;
     cursor: pointer;
 }
+.renew_membership {
+    background-color: #28a745;
+    color: white;
+    border: 2px solid #28a745;
+    padding: 2px 3px;  
+    border-radius: 4px;
+    margin-left: 15px;
+    cursor: pointer;
+}
+.membership_transfer_head {
+    text-align:left; 
+    padding:12px; 
+    border:1px solid #ddd; 
+    width:20%;
+}
+.membership_transfer_data {
+    text-align:left; 
+    padding:12px; 
+    border:1px solid #ddd; 
+    width:20%;
+}
+#memberSearchMembershipRenewal {
+    width:100%; 
+    padding:8px 12px; 
+    margin-bottom:12px; 
+    border:1px solid #ccc; 
+    border-radius:4px;
+}
+.membership_renewal_details {
+    background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; height: 550px; overflow: scroll;
+}
+.matched_members_renewal {
+    max-height: 200px; overflow-y: scroll;
+}

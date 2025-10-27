@@ -14,10 +14,10 @@
     </div>
     <div class="row">
         <div class="col-md-8 col-lg-8 col-sm-12 col-sx-12 mb-4">
-            <div class="bg-white p-2 rounded-lg shadow-md">
-                <h5 class="font-semibold mb-4">Member Registrations</h5>
+            <div class="card" style="padding: 15px;">
+                <h5 class="font-semibold mb-1">Member Registrations</h5>
                 <hr>
-                <div style="height: 350px;">
+                <div style="height: 450px;">
                     <canvas id="registrationChart"></canvas>
                 </div>
                 <div style="text-align: center; margin-top: 20px;">
@@ -28,12 +28,15 @@
             </div>
         </div>
         <div class="col-md-4 col-lg-4 col-sm-12 col-sx-12 mb-4">
-            <div class="bg-white p-2 rounded-lg shadow-md">
-                <h5 class="font-semibold mb-4">Members with Pending Fees</h5>
+            <div class="card" style="padding: 15px; height:250px;">
+                <h5 class="font-semibold mb-1">Members with Pending Fees</h5>
                 <hr>
-                <div style="height: 350px; overflow:auto;" class="pending_fee_members hide-scrollbar">
-                    
-                </div>
+                <div style="height: 250px; overflow:auto;" class="pending_fee_members hide-scrollbar"></div>
+            </div>
+            <div class="card" style="padding: 15px; height:250px; margin-top:15px;">
+                <h5 class="font-semibold mb-1">Membership Renewal Alert</h5>
+                <hr>
+                <div style="height: 250px; overflow:auto;" class="membership_renewal_alert hide-scrollbar"></div>
             </div>
         </div>
     </div>

@@ -347,6 +347,130 @@ $(document).ready(function() {
             });
         }
 
+        //Load membership renewal alert
+        function loadMembershipRenewalAlerts() {
+            $.ajax({
+                url: baseUrl + '/api/membership_renewal_alert',
+                method: 'GET',
+                success: function(response) {
+                        if(response && response.status === 'success') {
+                                console.log('Rendering members with pending fees:', response.data);
+                                const data = response.data;
+                                let displayTxt = '';
+                                Object.keys(data).forEach(member => {
+                                        const item = response.data[member];
+                                        let name = item.member_name.length > 20 ? item.member_name.substring(0, 17) + '...' : item.member_name;
+                                        displayTxt += `<div style="padding:8px; border-bottom:1px solid #ddd;">
+                                                <a href="${baseUrl}/admin/${member}" style="text-decoration:none; font-weight:bold;">${name}</a>
+                                                <br/>
+                                                <span style="font-size: 0.9em; color: #555;">Membership Type: <b>${item.membership_type}</b></span>&nbsp;&nbsp;&nbsp;
+                                                <span style="font-size: 0.9em; color: #555;">Membership End Date: <b>${new Date(item.membership_end_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</b></span>
+                                        </div>`;
+                                });
+                                $('.membership_renewal_alert').html(displayTxt);
+                        } else {
+                                console.error('Unexpected response shape', response);
+                        }
+                },
+                error: function(xhr, status, err) {
+                    console.error('Error fetching members with pending fees:', status, err, xhr.responseText);
+                }
+            });
+        }
+
+        $(document).on('click', '.renew_membership', function() {
+                const memberId = $(this).data('member-id');
+                const membershipId = $(this).data('membership-id');
+                $('.loadercontent').html('Renewing membership, please wait...');
+                $("#loader").show();
+                console.log('Renewing membership for member:', memberId, 'Membership ID:', membershipId);
+                // Add your renewal logic here
+                $.ajax({
+                        url: baseUrl + '/api/renew_membership',
+                        method: 'POST',
+                        data: {
+                                member_id: memberId,
+                                membership_id: membershipId
+                        },
+                        success: function(response) {
+                                if(response && response.status === 'success') {
+                                        $('.loadercontent').html('');
+                                        $("#loader").hide();
+                                        toastr.options.timeOut = 5000;
+                                        toastr.success(response.message || "Membership renewed successfully");
+                                        $(this).closest('tr').find('.membership_transfer_data').last().html('No Action');
+                                } else {
+                                        $('.loadercontent').html('');
+                                        $("#loader").hide();
+                                        toastr.options.timeOut = 5000;
+                                        toastr.error(response.message || "Membership renewal failed");
+                                }
+                        },
+                        error: function(xhr, status, err) {
+                                console.error('Error renewing membership:', status, err, xhr.responseText);
+                        }
+                });
+        });
+
+        $('#memberSearchMembershipRenewal').on('input', function() {
+                const query = $(this).val().toLowerCase();
+                const matchedMembers = members_renewal.filter(member => member.member_name.toLowerCase().includes(query) || 
+                                       member.member_id.toString().includes(query) || 
+                                       member.phone_no.includes(query));
+                console.log(matchedMembers);
+                const container = $('.matched_members_renewal');
+                container.empty();
+                if (query.length === 0) {
+                        return;
+                }
+                if (matchedMembers.length === 0) {
+                        container.append('<p>No members found.</p>');
+                        return;
+                }
+                matchedMembers.forEach(member => {
+                        const memberDiv = `<div style="padding:8px; border-bottom:1px solid #ddd; cursor:pointer;"><a class="member_link_renewal" data-id="${member.member_id}" data-name="${member.member_name}" style="text-decoration:none;">${member.member_name}</a></div>`;
+                        container.append(memberDiv);
+                });
+        });
+
+        $(document).on('click', '.member_link_renewal', function() {
+                const memberId = $(this).data('id');
+                const matchedMemberships = members_renewal.filter(member => member.member_id === memberId);
+                console.log('Matched Memberships : ' + JSON.stringify(matchedMemberships));
+                $('#memberSearchMembershipRenewal').val('');
+                $('.matched_members_renewal').empty();
+                const scheduleContainer = $('.membership_renewal_details');
+                scheduleContainer.empty();
+                let scheduleHtml = ``;
+                scheduleHtml += `<table style="width:100%; border-collapse:collapse; margin-top:12px; overflow:scroll;">
+                        <thead>
+                                <tr>
+                                        <th class="membership_transfer_head">ID</th>
+                                        <th class="membership_transfer_head">Name</th>
+                                        <th class="membership_transfer_head">Membership</th>
+                                        <th class="membership_transfer_head">Membership End Date</th>
+                                        <th class="membership_transfer_head">Action</th>
+                                </tr>
+                        </thead>
+                        <tbody>`;
+                matchedMemberships.forEach(item => {
+                        scheduleHtml += `<tr>
+                                <td class="membership_transfer_data">${item.member_id}</td>
+                                <td class="membership_transfer_data">${item.member_name}</td>
+                                <td class="membership_transfer_data">${item.membership_name}</td>
+                                <td class="membership_transfer_data">${item.membership_end_date}</td>`;
+                                if(item.renew_action == 0) {
+                                        scheduleHtml += `<td class="membership_transfer_data">No Action</td>`;
+                                } else {
+                                        scheduleHtml += `<td class="membership_transfer_data">
+                                        <button class="renew_membership" data-member-id="${item.member_id}" data-membership-id="${item.membership_id}">Renew</button></td>`;
+                                }
+                        scheduleHtml += `</tr>`;
+                });
+                scheduleHtml += `</tbody></table>`;
+                scheduleContainer.append(scheduleHtml);
+        });
+
         function loadRecentRegistrationsData(selectedMonth) {
                 $.ajax({
                         url: baseUrl + '/api/recent_registrations',
@@ -367,6 +491,7 @@ $(document).ready(function() {
         }
 
         loadMembersWithPendingFees();
+        loadMembershipRenewalAlerts();
 
         // Handle recent fee collection radio button change
         $(document).on('change', '.recent_fee_collection', function() {
