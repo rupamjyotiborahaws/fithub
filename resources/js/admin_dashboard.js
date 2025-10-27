@@ -458,7 +458,7 @@ $(document).ready(function() {
                                 <td class="membership_transfer_data">${item.member_id}</td>
                                 <td class="membership_transfer_data">${item.member_name}</td>
                                 <td class="membership_transfer_data">${item.membership_name}</td>
-                                <td class="membership_transfer_data">${item.membership_end_date}</td>`;
+                                <td class="membership_transfer_data">${new Date(item.membership_end_date).toLocaleDateString('en-GB').replace(/\//g, '-')}</td>`;
                                 if(item.renew_action == 0) {
                                         scheduleHtml += `<td class="membership_transfer_data">No Action</td>`;
                                 } else {
