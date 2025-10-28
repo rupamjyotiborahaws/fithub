@@ -9,7 +9,13 @@ export function renderRegistrationChart(canvasId, labels, values) {
       datasets: [{
         label: 'Registrations',
         data: values,
-        borderWidth: 1
+        borderWidth: 1,
+        backgroundColor: [
+          'rgba(6, 158, 31, 0.98)',
+        ],
+        borderColor: [
+          'rgba(6, 158, 31, 1)',
+        ]
       }]
     },
     options: { 
@@ -17,7 +23,7 @@ export function renderRegistrationChart(canvasId, labels, values) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: true
+          display: false
         }
       },
       scales: {
@@ -123,9 +129,15 @@ export function renderMemberTrainerChart(canvasId, labels, values) {
       data: {
         labels,
         datasets: [{
-          label: 'No. of members allotted',
+          label: '',
           data: values,
-          borderWidth: 1
+          borderWidth: 1,
+          backgroundColor: [
+            'rgba(6, 158, 31, 0.98)'
+          ],
+          borderColor: [
+            'rgba(6, 158, 31, 1)'
+          ]
         }]
       },
       options: { 
@@ -133,17 +145,31 @@ export function renderMemberTrainerChart(canvasId, labels, values) {
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: true
+            display: false
           }
         },
         scales: {
           x: {
+            title: { 
+              display: true, 
+              text: 'Trainers',
+              font: {
+                weight: 'bold'
+              }
+            },
             grid: {
               display: false
             }
           },
           y: {
             beginAtZero: true,
+            title: { 
+              display: true, 
+              text: 'Number of Members',
+              font: {
+                weight: 'bold'
+              }
+            },
             ticks: {
               stepSize: 1,
               callback: function(value) {
@@ -372,7 +398,13 @@ export function renderFeeCollectionsChart(canvasId, labels, values, filter) {
       datasets: [{
         label: 'Fee Collection',
         data: values,
-        borderWidth: 1
+        borderWidth: 1,
+        backgroundColor: [
+          'rgba(6, 158, 31, 0.98)',
+        ],
+        borderColor: [
+          'rgba(6, 158, 31, 1)',
+        ]
       }]
     },
     options: { 
@@ -408,7 +440,7 @@ export function renderFeeCollectionsChart(canvasId, labels, values, filter) {
             }
           },
           grid: {
-            display: true,
+            display: false,
             color: 'rgba(0, 0, 0, 0.1)'
           },
           ticks: {
@@ -433,6 +465,70 @@ export function renderFeeCollectionsChart(canvasId, labels, values, filter) {
           },
           ticks: {
             padding: 10
+          }
+        }
+      }
+    }
+  });
+}
+
+export function renderPayoutStatisticsChart(canvasId, labels, values) {
+  const ctx = document.getElementById(canvasId);
+  return new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: '',
+        data: values,
+        borderWidth: 1,
+        backgroundColor: [
+          'rgba(207, 138, 11, 1)', // Color for Payouts
+          'rgba(6, 158, 31, 0.98)',
+          'rgba(211, 9, 53, 0.96)'
+        ],
+        borderColor: [
+          'rgba(207, 138, 11, 1)',
+          'rgba(6, 158, 31, 1)',
+          'rgba(211, 9, 53, 1)'
+        ]
+      }]
+    },
+    options: { 
+      responsive: true, 
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        x: {
+          title: { 
+            display: true, 
+            text: '',
+            font: {
+              weight: 'bold'
+            }
+          },
+          grid: {
+            display: false
+          }
+        },
+        y: {
+          beginAtZero: true,
+          title: { 
+            display: true, 
+            text: 'Amount in ₹',
+            font: {
+              weight: 'bold'
+            }
+          },
+          ticks: {
+            stepSize: 2000,
+            callback: function(value) {
+              return Number.isInteger(value) ? value : '';
+            }
           }
         }
       }

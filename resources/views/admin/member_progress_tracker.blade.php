@@ -3,12 +3,12 @@
 @section('title', 'Progress Tracker')
 
 @section('content')
-<div class="container-fluid mx-auto py-6" style="min-height: 75vh;">
+<div class="container-fluid card container-card">
     <div class="row">
         <div class="col-md-9 col-lg-9 col-sm-12 col-xs-12">
             <div class="card mt-2 hide-scrollbar instructions_mobile" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; overflow: scroll;">
                 <div>
-                    <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Instructions</h5>
+                    <h5 style="margin:0 0 12px;" class="font-semibold mb-2">Instructions</h5>
                     <ul class="instructions_list_fee_collection">
                         <li style="list-style-type: disc;" id="instructions_list_progress_record_1">Click on "Add Record" button to add health records of member</li>
                         <li style="list-style-type: disc;" id="instructions_list_progress_record_2">Click on the member name to see the progress chart of the member</li>
@@ -21,7 +21,8 @@
                 <div class="matched_members_health_rec" style="max-height:200px; overflow:auto;"></div>
             </div>
             <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 700px; overflow: scroll;">
-                <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Progress Record Entry for Members</h5>
+                <h5 style="margin:0 0 12px;" class="font-semibold mb-2">Progress Record Entry for Members</h5>
+                <hr>
                 <table id="health_rec_basic_table" style="border-collapse:collapse; width:100%; margin-bottom:1.25rem; border:1px solid #ddd;">
                     <thead>
                         <tr style="background-color:#f8f9fa;">

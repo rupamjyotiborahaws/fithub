@@ -22,6 +22,7 @@ use App\Models\TransferMembership;
 use App\Models\MembershipTransferLog;
 use App\Models\FeePaymentScheduleArchive;
 use App\Models\RenewalHistory;
+use App\Models\StaffSalary;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -732,15 +733,20 @@ class AdminController extends Controller
     public function saveConfig(Request $request) {
         $inputs = $request->all();
         $config = Config::first();
+        //dd($config);
         if($config) {
-            $config->membership_renewal_reminder = $inputs['membership_renewal_reminder'];
-            $config->membership_transfer_limit = $inputs['membership_transfer_limit'];
+            $config->membership_renewal_reminder = $inputs['membership_renewal_reminder'] ?? 0;
+            $config->membership_transfer_limit = $inputs['membership_transfer_limit'] ?? 0;
+            $config->attendance_opening_time = $inputs['attendance_opening_time'] ?? null;
+            $config->attendance_last_time = $inputs['attendance_last_time'] ?? null;
             $config->save();
             return response()->json(['message' => 'Config updated successfully.', 'data' => $config, 'status' => 'updated'], 200);
         } else {
             $config = new Config();
-            $config->membership_renewal_reminder = $inputs['membership_renewal_reminder'];
-            $config->membership_transfer_limit = $inputs['membership_transfer_limit'];
+            $config->membership_renewal_reminder = $inputs['membership_renewal_reminder'] ?? 0;
+            $config->membership_transfer_limit = $inputs['membership_transfer_limit'] ?? 0;
+            $config->attendance_opening_time = $inputs['attendance_opening_time'] ?? null;
+            $config->attendance_last_time = $inputs['attendance_last_time'] ?? null;
             $config->save();
             return response()->json(['message' => 'Config added successfully.', 'data' => $config, 'status' => 'added'], 200);
         }
@@ -904,7 +910,16 @@ class AdminController extends Controller
 
     public function saveAttendance(Request $request, $member_id) {
         $inputs = $request->all();
+        $config = Config::first();
         $today = date('Y-m-d');
+        $attendance_opening_time = $config->attendance_opening_time;
+        $attendance_last_time = $config->attendance_last_time;
+        if(date('H:i') < $attendance_opening_time) {
+            return response()->json(['message' => 'Attendance cannot be marked before '.date('h:i A', strtotime($attendance_opening_time)) . '.', 'status' => 'failed'], 200);
+        }
+        if(date('H:i') > $attendance_last_time) {
+            return response()->json(['message' => 'Attendance cannot be marked after '.date('h:i A', strtotime($attendance_last_time)) . '.', 'status' => 'failed'], 200);
+        }
         $attendance = Attendance::where(['member_id' => $member_id, 'attendance_date' => $today])->first();
         if($attendance) {
                 return response()->json(['message' => 'Member already checked in today.', 'status' => 'failed'], 400);
@@ -1454,5 +1469,59 @@ class AdminController extends Controller
             'renewal_date' => now()
         ]);
         return response()->json(['message' => 'Membership renewed successfully.', 'status' => 'success'], 200); 
+    }
+
+    public function getSalary(Request $request) {
+        $client_settings = $request->client_settings;
+        $salary = StaffSalary::all();
+        return view('admin.staff_salary', compact('salary', 'client_settings'));
+    }
+
+    public function addSalary(Request $request) {
+        $inputs = $request->all();
+        $salary = new StaffSalary();
+        $salary->staff_name = $inputs['staff_name'];
+        $salary->staff_type = $inputs['staff_type'];
+        $salary->amount = $inputs['salary'];
+        $salary->save();
+        if($salary->id) {
+            return response()->json(['message' => 'Staff salary added successfully.', 'status' => 'success']);
+        } else {
+            return response()->json(['message' => 'Failed to add staff salary.', 'status' => 'failed']);
+        }
+    }
+
+    public function editSalary(Request $request) {
+        $inputs = $request->all();
+        $salary = StaffSalary::find($inputs['salary_id']);
+        if(!$salary) {
+            return response()->json(['message' => 'Staff salary record not found.', 'status' => 'failed']);
+        }
+        $salary->staff_name = $inputs['staff_name'];
+        //$salary->staff_type = $inputs['staff_type'];
+        $salary->amount = $inputs['salary'];
+        $salary->save();
+        return response()->json(['message' => 'Staff salary updated successfully.', 'status' => 'success']);
+    }
+
+    public function payoutStatistics(Request $request) {
+        $inputs = $request->all();
+        $current_month = date('m', strtotime($inputs['month']));
+        $current_year = date('Y', strtotime($inputs['month']));
+        $start_date = Carbon::create($current_year, $current_month, 1)->toDateString();
+        $end_date = Carbon::create($current_year, $current_month, Carbon::create($current_year, $current_month, 1)->daysInMonth)->toDateString();
+        $total_payouts = StaffSalary::sum('amount');
+        $total_amount = FeePaymentSchedule::where('for_month', $inputs['month'])->sum('amount');
+        $paid_amount = FeePaymentSchedule::where(['for_month' => $inputs['month'], 'is_paid' => 1])->sum('amount');
+        $single_time_payments = FeePayment::where('fee_type', 'one_time')
+                                    ->whereBetween('payment_date', [$start_date, $end_date])
+                                    ->sum('amount');
+        $paid_amount += $single_time_payments;
+        $total_amount += $single_time_payments;
+        $data = [
+            'matrics' => ['Expected', 'Received', 'Payout'],
+            'amounts' => [$total_amount, $paid_amount, $total_payouts]
+        ];
+        return response()->json(['data' => $data, 'status' => 'success'], 200);
     }
 }

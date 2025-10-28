@@ -3,12 +3,13 @@
 @section('title', 'Client Settings')
 
 @section('content')
-<div class="container-fluid mx-auto py-6">
+<div class="container-fluid card container-card">
     <div class="row">
-        <div class="col-md-9">
+        <div class="col-md-12 col-lg-12 col-sm-12 col-sx-12 mb-2">
             {{-- Client Settings --}}
             <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
-                <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Client Settings</h5>
+                <h5 style="margin:0 0 12px;" class="font-semibold mb-2">Client Settings</h5>
+                <hr>
                 <form method="POST" action="" autocomplete="on">
                     @csrf
                     <div class="row">

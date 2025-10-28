@@ -31,6 +31,7 @@
            'resources/js/jquery-3.7.1.min.js',
            'resources/js/toastr.min.js',
            'resources/js/admin_dashboard.js',
+           'resources/js/validation.js',
            'resources/js/layout.js'
     ])
     @stack('head')
@@ -138,7 +139,8 @@
                                     <div class="py-1">
                                         <a href="{{ route('get_client') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Client</a>
                                         <a href="{{ route('get_memberships') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Membership</a>
-                                        <a href="{{ route('get_config') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Configuration</a>
+                                        <a href="{{ route('get_config') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">General</a>
+                                        <a href="{{ route('get_salary') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600" style="text-decoration: none;">Salary</a>
                                     </div>
                                 </div>
                             </div>
@@ -247,7 +249,8 @@
                                 <div id="mobile-settings-menu" class="hidden pl-6 space-y-1">
                                     <a href="{{ route('get_client') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Client</a>
                                     <a href="{{ route('get_memberships') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Membership</a>
-                                    <a href="{{ route('get_config') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Configuration</a>
+                                    <a href="{{ route('get_config') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">General</a>
+                                    <a href="{{ route('get_salary') }}" class="block px-3 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md" style="text-decoration: none;">Salary</a>
                                 </div>
                             </div>
                         @else

@@ -14,6 +14,7 @@ export default defineConfig({
 			    'resources/js/app.js',
 	            'resources/js/toastr.min.js',
                 'resources/js/admin_dashboard.js',
+                'resources/js/validation.js',
                 'resources/js/layout.js'
 		   ],
             refresh: true,

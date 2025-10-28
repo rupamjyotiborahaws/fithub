@@ -19,12 +19,13 @@
         box-shadow:0 0 0 1px #2563eb33;
     }
 </style>
-<div class="container-fluid mx-auto py-6">
+<div class="container-fluid card container-card">
     <div class="row">
         <div class="col-md-9">
             {{-- New Member Registration --}}
             <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
-                <h5 style="margin:0 0 12px;" class="font-semibold mb-4">New Member Registration</h5>
+                <h5 style="margin:0 0 12px;" class="font-semibold mb-2">New Member Registration</h5>
+                <hr>
                 <form method="POST" action="" autocomplete="on">
                     @csrf
                     <div class="row">
@@ -60,7 +61,7 @@
                             <div class="mb-2">
                                 <label>Gender</label>
                                 <select name="gender" class="w-100">
-                                    <option value="">-- Select --</option>
+                                    <option value="s">-- Select --</option>
                                     <option value="m" {{ old('gender')=='m'?'selected':'' }}>Male</option>
                                     <option value="f" {{ old('gender')=='f'?'selected':'' }}>Female</option>
                                     <option value="o" {{ old('gender')=='o'?'selected':'' }}>Other</option>
@@ -107,7 +108,7 @@
                             <div class="mb-2">
                                 <label>Membership Plan</label>
                                 <select name="membership_type" class="form-control membership_type" required class="w-100">
-                                    <option value="">-- Select --</option>
+                                    <option value="s">-- Select --</option>
                                     @foreach($memberships ?? [] as $m)
                                         <option value="{{ $m->id }}" {{ old('membership_type')==$m->id?'selected':'' }}>{{ $m->type }} - {{ ucfirst($m->duration_months) }} {{ $m->duration_months > 1 ? 'Months' : 'Month' }}</option>
                                     @endforeach
@@ -151,7 +152,7 @@
                         <div class="col-md-6 col-lg-6 col-sm-12 col-sx-12">
                             <label for="paymentMethod" class="form-label">Payment Method</label>
                             <select class="form-select" id="paymentMethod" name="payment_method" required>
-                                <option value="">Select Payment Method</option>
+                                <option value="0">Select Payment Method</option>
                                 <option value="cash">Cash</option>
                                 <option value="upi">UPI</option>
                             </select>      

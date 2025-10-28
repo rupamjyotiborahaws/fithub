@@ -4,20 +4,12 @@
 
 @section('content')
 
-@php
-    use Carbon\Carbon;
-    $currentMonth = Carbon::now()->format('M Y'); // Changed from 'Y-m' to
-    $months = collect();
-    for ($i = 0; $i < 3; $i++) {
-        $months->push(Carbon::now()->subMonths($i)->format('M Y'));
-    }
-@endphp
-
-<div class="container-fluid mx-auto py-6" style="min-height: 75vh;">
+<div class="container-fluid card container-card">
     <div class="row">
-        <div class="col-md-12 mb-4">
+        <div class="col-md-12 mb-2">
             {{-- Membership Transfer --}}
-            <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Membership Transfer</h5>
+            <h5 style="margin:0 0 12px;" class="font-semibold mb-2">Membership Transfer</h5>
+            <hr>
             <input type="text" id="memberSearchMembershipTransfer" placeholder="Search by Member ID, Name, or Phone No">
             <div class="matched_members_transfer hide-scrollbar"></div>
             <div class="card membership_transfer_details"></div>

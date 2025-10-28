@@ -144,4 +144,8 @@
     .membership_transfer_data {
         font-size: 14px;
     }
+    .dashboard_titles {
+        font-weight: 500;
+        font-size: 16px;
+    }
 }

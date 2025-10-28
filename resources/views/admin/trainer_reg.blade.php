@@ -7,16 +7,6 @@
     .w-100 { width:100%; }
     .mb-2 { margin-bottom:.75rem; }
     .mb-4 { margin-bottom:1.25rem; }
-    .btn-primary {
-        background:#2563eb;
-        color:#fff;
-        border:none;
-        padding:10px 14px;
-        cursor:pointer;
-        border-radius:4px;
-        font-weight:600;
-    }
-    .btn-primary:hover { background:#1d4ed8; }
     input, select {
         padding:8px;
         border:1px solid #ccc;
@@ -28,16 +18,14 @@
         border-color:#2563eb;
         box-shadow:0 0 0 1px #2563eb33;
     }
-    .alert { padding:10px 14px; border-radius:4px; }
-    .alert-success { background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0; }
-    .alert-danger { background:#fef2f2;color:#991b1b;border:1px solid #fecaca; }
 </style>
-<div class="container-fluid mx-auto py-6">
+<div class="container-fluid card container-card">
     <div class="row">
-        <div class="col-md-12 col-lg-12 col-sm-12 col-sx-12 mb-4">
+        <div class="col-md-12 col-lg-12 col-sm-12 col-sx-12 mb-2">
             {{-- Trainer Registration --}}
             <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px;">
-                <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Trainer Registration</h5>
+                <h5 style="margin:0 0 12px;" class="font-semibold mb-2">Trainer Registration</h5>
+                <hr>
                 <form method="POST" action="" autocomplete="on">
                     @csrf
                     <div class="row">
@@ -79,7 +67,7 @@
                             <div class="mb-2">
                                 <label>Gender</label>
                                 <select name="gender" class="w-100">
-                                    <option value="">-- Select --</option>
+                                    <option value="s">-- Select --</option>
                                     <option value="m" {{ old('gender')=='m'?'selected':'' }}>Male</option>
                                     <option value="f" {{ old('gender')=='f'?'selected':'' }}>Female</option>
                                     <option value="o" {{ old('gender')=='o'?'selected':'' }}>Other</option>

@@ -3,10 +3,11 @@
 @section('title', 'Attendance Report')
 
 @section('content')
-<div class="container-fluid mx-auto py-6" style="min-height: 75vh;">
+<div class="container-fluid card container-card">
     <div class="row">
         <div class="col-md-12 col-lg-12 col-sm-12 col-sx-12">
-            <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Attendance Report</h5>
+            <h5 style="margin:0 0 12px;" class="font-semibold mb-2">Attendance Report</h5>
+            <hr>
         </div>
     </div>
     <div class="row" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px; margin-bottom:10px;">

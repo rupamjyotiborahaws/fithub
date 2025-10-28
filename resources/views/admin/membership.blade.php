@@ -3,7 +3,7 @@
 @section('title', 'Membership Settings')
 
 @section('content')
-<div class="container-fluid mx-auto py-6" style="min-height: 75vh;">
+<div class="container-fluid card container-card">
     <div class="row mb-4">
         <div class="col-md-12">
             <button class="add_new_membership" data-bs-toggle="modal" data-bs-target="#addMembershipModal" style="margin:0; font-size:15px; font-weight:600; float:right;">+ Add Membership</button>
@@ -12,7 +12,8 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; min-height: 600px; overflow: scroll;">
-                <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Available Memberships</h5>
+                <h5 style="margin:0 0 12px;" class="font-semibold mb-2">Available Memberships</h5>
+                <hr>
                 <table id="membershipTable" style="border-collapse:collapse; width:100%; margin-bottom:1.25rem; border:1px solid #ddd;">
                     <thead>
                         <tr style="background-color:#f8f9fa;">

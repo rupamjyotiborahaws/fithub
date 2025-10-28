@@ -21,6 +21,7 @@ Route::middleware(['check_authentication', 'client_settings'])->group(function (
     Route::get('member/{id}', [AdminController::class, 'memberShow'])->name('member.show');
     Route::get('client', [AdminController::class, 'getClient'])->name('get_client');
     Route::get('memberships', [AdminController::class, 'getMemberships'])->name('get_memberships');
+    Route::get('salary', [AdminController::class, 'getSalary'])->name('get_salary');
     Route::get('fee_collection', [AdminController::class, 'feeCollection'])->name('get_fee_collection');
     Route::get('fee_collections', [AdminController::class, 'feeCollections'])->name('get_fee_collections');
     Route::get('config', [AdminController::class, 'getConfig'])->name('get_config');

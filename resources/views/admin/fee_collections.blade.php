@@ -3,10 +3,11 @@
 @section('title', 'Fee Collections')
 
 @section('content')
-<div class="container-fluid mx-auto py-6" style="min-height: 75vh;">
+<div class="container-fluid card container-card">
     <div class="row">
         <div class="col-md-12 col-lg-12 col-sm-12 col-sx-12">
-            <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Fee Collections</h5>
+            <h5 style="margin:0 0 12px;" class="font-semibold mb-2">Fee Collections</h5>
+            <hr>
         </div>
     </div>
     <div class="row">
@@ -40,16 +41,6 @@
                 <canvas id="feeCollectionsDisplayChartCanvasId" style="height:550px; width:80%;"></canvas>
             </div>
         </div>
-        <!--<div class="col-md-4 col-lg-4 col-sm-12 col-xs-12">
-            <div id="text_display_section" class="mt-6 fee_collection_txt_display_section" style="margin-top:24px; height:600px; width:100%; border:1px solid #ccc; border-radius:8px; padding:10px;">
-                <h6 class="font-semibold mb-2">Fee Collection Summary</h6>
-                <div class="row hide-scrollbar mt-3" style="overflow: scroll;">
-                    <div class="col-md-4 col-lg-4 col-sm-4 col-xs-4"><strong>Membership</strong></div>
-                    <div class="col-md-4 col-lg-4 col-sm-4 col-xs-4"><strong>Month</strong></div>
-                    <div class="col-md-4 col-lg-4 col-sm-4 col-xs-4"><strong>Fee Collected</strong></div>
-                </div>
-            </div>
-        </div>-->
     </div>
 </div>
 @endsection

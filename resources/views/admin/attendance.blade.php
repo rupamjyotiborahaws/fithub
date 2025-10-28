@@ -3,12 +3,12 @@
 @section('title', 'Attendance Marker')
 
 @section('content')
-<div class="container-fluid mx-auto py-6" style="min-height: 75vh;">
+<div class="container-fluid card container-card">
     <div class="row">
         <div class="col-md-9 col-lg-9 col-sm-12 col-xs-12">
             <div class="card hide-scrollbar instructions_mobile" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px; margin-bottom:10px;">
                 <div>
-                    <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Instructions</h5>
+                    <h5 style="margin:0 0 12px;" class="font-semibold mb-2">Instructions</h5>
                     <ul>
                         <li style="list-style-type: disc;">Click on "Check In" to mark attendance for a member.</li>
                         <li style="list-style-type: disc;">Click on a member's name to view their attendance report for the month.</li>
@@ -22,7 +22,8 @@
             </div>
             {{-- Membership Settings --}}
             <div class="card hide-scrollbar" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 725px; overflow: scroll;">
-                <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Basic Details</h5>
+                <h5 style="margin:0 0 12px;" class="font-semibold mb-2">Basic Details</h5>
+                <hr>
                 <table id="attn_basic_table" style="border-collapse:collapse; width:100%; margin-bottom:1.25rem; border:1px solid #ddd;">
                     <thead>
                         <tr style="background-color:#f8f9fa;">

@@ -9,7 +9,9 @@ class Config extends Model
     protected $table = 'config';
 
     protected $fillable = [
-        'monthly_fee',
-        'registration_fee',
+        'membership_renewal_reminder',
+        'membership_transfer_limit', 
+        'attendance_opening_time',
+        'attendance_last_time',
     ];
 }

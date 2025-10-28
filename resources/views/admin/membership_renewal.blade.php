@@ -4,11 +4,12 @@
 
 @section('content')
 
-<div class="container-fluid mx-auto py-6" style="min-height: 75vh;">
+<div class="container-fluid card container-card">
     <div class="row">
-        <div class="col-md-12 mb-4">
+        <div class="col-md-12 mb-2">
             <div class="card" style="padding: 10px; margin-bottom:10px;">
-                <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Membership Renewal</h5>
+                <h5 style="margin:0 0 12px;" class="font-semibold mb-2">Membership Renewal</h5>
+                <hr>
                 <input type="text" id="memberSearchMembershipRenewal" placeholder="Search by Member ID, Name, or Phone No">
                 <div class="matched_members_renewal hide-scrollbar"></div>
             </div>

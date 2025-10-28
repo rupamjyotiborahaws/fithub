@@ -560,3 +560,62 @@
 .matched_members_renewal {
     max-height: 200px; overflow-y: scroll;
 }
+.add_new_salary {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.add_salary {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.salary_table_head {
+    text-align:left; 
+    padding:12px; 
+    border:1px solid #ddd; 
+    width:25%; 
+    background-color:#e9ecef;
+}
+.salary_table_data {
+    text-align:left; 
+    padding:12px; 
+    border:1px solid #ddd; 
+    width:25%; 
+}
+.edit_salary {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.edit_salary:hover {
+    background-color: #FCFCFC;
+}
+.edit_save {
+    background-color: white;
+    color: #007bff;
+    font-weight: bold;
+    border: 1px solid #007bff;
+    padding: 5px 10px;  
+    border-radius: 4px;
+    cursor: pointer;
+}
+.dashboard_titles {
+    font-weight: 500;
+    font-size: 20px;
+}
+.container-card {
+    padding:20px; margin-top:10px; background:#f9f9f9; border-radius:8px; height:750px; overflow:auto;
+}

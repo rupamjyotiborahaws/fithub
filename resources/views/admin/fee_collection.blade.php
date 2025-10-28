@@ -12,12 +12,13 @@
         $months->push(Carbon::now()->subMonths($i)->format('M Y'));
     }
 @endphp
-<div class="container-fluid mx-auto py-6" style="min-height: 75vh;">
+<div class="container-fluid card container-card">
     <div class="row">
         <div class="col-md-9">
             <div class="card hide-scrollbar instructions_mobile mt-2" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; overflow: scroll;">
                 <div>
-                    <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Instructions</h5>
+                    <h5 style="margin:0 0 12px;" class="font-semibold mb-2">Instructions</h5>
+                    <hr>
                     <ul class="instructions_list_fee_collection">
                         <li style="list-style-type: disc;" id="instructions_list_fee_collection_1">Select checkboxes to pay the fee for selected members for the Pending month</li>
                         <li style="list-style-type: disc;" id="instructions_list_fee_collection_2">Use Search to filter members and get the detailed fee payment data</li>
@@ -31,7 +32,7 @@
                 </div>
             </div>
             <div class="card hide-scrollbar fee_collection_data_div" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:18px; max-height: 800px; overflow-x: auto;">
-                <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Fee Collection</h5>
+                <h5 style="margin:0 0 12px;" class="font-semibold mb-2">Fee Collection</h5>
                 <div class="fee_schedule">
                     <table class="fee_collection_table hide-scrollbar">
                         <thead id="fee_collection_table_head">

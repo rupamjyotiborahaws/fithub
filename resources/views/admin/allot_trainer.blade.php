@@ -3,14 +3,13 @@
 @section('title', 'Allot Trainer')
 
 @section('content')
-<div class="container-fluid mx-auto py-6" style="min-height:calc(100vh - 200px);">
+<div class="container-fluid card container-card">
     <div class="row">
-        <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12 mb-4">
-            <div>
-                <h5 style="margin:0 0 12px;" class="font-semibold mb-1">Trainer Allotment</h5>     
-            </div>
+        <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12 mb-2">
+            <h5 style="margin:0 0 12px;" class="font-semibold mb-2">Trainer Allotment</h5>
+            <hr>     
         </div>
-        <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12 mb-4">
+        <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12 mb-2">
             <div class="card mt-2 hide-scrollbar trainer_allot">
                 <h5 style="margin:0 0 12px;" class="font-semibold mb-4">Members</h5>
                 <div style="margin-top:6px;">
@@ -23,10 +22,10 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12 mb-4">
+        <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12 mb-2">
             <div class="card mt-2 hide-scrollbar trainer_allot">
                 <div>
-                    <h5 style="margin:0 0 12px; float:left;" class="font-semibold mb-4">Trainers</h5>
+                    <h5 style="margin:0 0 12px; float:left;" class="font-semibold mb-2">Trainers</h5>
                     <button class="allot_trainer" id="allot-trainer-btn">Allot Trainer</button>
                 </div>
                 <div>
@@ -39,17 +38,11 @@
                 </div>
             </div>
         </div>
-        <!-- <div class="col-md-2 col-lg-2 col-sm-12 col-xs-12 mb-4">
-            <h5 style="margin:0 0 12px;" class="font-semibold mb-4">&nbsp;</h5>
-            <div style="margin-top:6px; float:right; margin-right:30px;">
-                <button class="allot_trainer" id="allot-trainer-btn">Allot Trainer</button>
-            </div>
-        </div> -->
     </div>
     <div class="row">
-        <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12 mb-4">
+        <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12 mb-2">
             <div class="bg-white p-2 rounded-lg shadow-md">
-                <h5 class="font-semibold mb-4">No. of members alloted to the trainers</h5>
+                <h5 class="font-semibold mb-2">No. of members alloted to the trainers</h5>
                 <hr>
                 <div style="height: 350px;">
                     <canvas id="trainerAllotmentChart"></canvas>

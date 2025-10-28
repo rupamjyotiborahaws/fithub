@@ -8,6 +8,11 @@ window.toastr = toastr;
 // Optionally import Toastr CSS too
 import 'toastr/build/toastr.min.css';
 
+import { validate_member_reg_form, validate_progress_record_entry_form, validate_trainer_reg_form } from './validation.js';
+window.validate_member_reg_form = validate_member_reg_form;
+window.validate_progress_record_entry_form = validate_progress_record_entry_form;
+window.validate_trainer_reg_form = validate_trainer_reg_form;
+
 import QRCode from 'qrcode';
 window.QRCode = QRCode;
 
@@ -29,6 +34,7 @@ $(document).ready(function() {
         const attendanceChartId = 'todayAttendanceChart';
         const progressChartCanvasId = 'progressChartCanvasId';
         const feeCollectionsDisplayChartCanvasId = 'feeCollectionsDisplayChartCanvasId';
+        const payoutStatisticsChartCanvasId = 'payoutStatisticsChartCanvasId';
 
         
         // Store chart instances for proper cleanup
@@ -53,6 +59,36 @@ $(document).ready(function() {
                                         }
                                 } else {
                                         console.error('Chart element not found:', registrationChartId);
+                                }
+                        },
+                        error: function (xhr, status, err) {
+                                console.error('Error fetching registration data:', status, err, xhr.responseText);
+                        }
+                });
+        }
+
+        function loadPayoutStatisticsData() {
+                const current_month_year = new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                $.ajax({
+                        url: baseUrl + '/api/payout_statistics', // adjust to your backend route
+                        method: 'GET',
+                        dataType: 'json',
+                        data: { month: current_month_year },
+                        success: function (response) {
+                                const data = response.data;
+                                console.log('Fetched payout data:', data);
+                                if (!data || !Array.isArray(data.matrics) || !Array.isArray(data.amounts)) {
+                                        console.error('Unexpected response shape', data);
+                                        return;
+                                }
+                                const chartElement = document.getElementById(payoutStatisticsChartCanvasId);
+                                if(chartElement) {
+                                        const chartInstance = window.renderPayoutStatisticsChart(payoutStatisticsChartCanvasId, data.matrics, data.amounts);
+                                        if (chartInstance) {
+                                                chartInstances[payoutStatisticsChartCanvasId] = chartInstance;
+                                        }
+                                } else {
+                                        console.error('Chart element not found:', payoutStatisticsChartCanvasId);
                                 }
                         },
                         error: function (xhr, status, err) {
@@ -122,27 +158,27 @@ $(document).ready(function() {
         }
 
         function loadTodayAttendanceData() {
-                console.log('Loading today attendance data...');
                 $.ajax({
                         url: baseUrl + '/api/today_attendance', // adjust to your backend route
                         method: 'GET',
                         dataType: 'json',
                         success: function (data) {
-                                console.log('Fetched today attendance data:', data);
                                 if (!data || !Array.isArray(data.status) || !Array.isArray(data.attendance)) {
                                         console.error('Unexpected response shape', data);
                                         return;
                                 }
                                 const chartElement = document.getElementById(attendanceChartId);
-                                console.log('Chart element found:', chartElement);
-                                console.log('renderTodayAttendanceChart function available:', typeof window.renderTodayAttendanceChart);
-                                
                                 if (chartElement) {
-                                        console.log('Calling renderTodayAttendanceChart with:', {
-                                                canvasId: attendanceChartId,
-                                                labels: data.status,
-                                                values: data.attendance,
-                                        });
+                                        // Clear existing chart before creating new one
+                                        if (chartInstances[attendanceChartId]) {
+                                                chartInstances[attendanceChartId].destroy();
+                                                delete chartInstances[attendanceChartId];
+                                        }
+                                        
+                                        // Clear the canvas
+                                        const ctx = chartElement.getContext('2d');
+                                        ctx.clearRect(0, 0, chartElement.width, chartElement.height);
+
                                         const chartInstance = window.renderTodayAttendanceChart(attendanceChartId, data.status, data.attendance);
                                         if (chartInstance) {
                                                 chartInstances[attendanceChartId] = chartInstance;
@@ -199,10 +235,7 @@ $(document).ready(function() {
                                         return;
                                 }
                                 const chartElement = document.getElementById(currentMonthFeeCollectionChartId);
-                                console.log('Chart element found:', chartElement);
-                                console.log('renderFeeCollectionChart function available:', typeof window.renderFeeCollectionChart);
-                                
-                                if (chartElement) {
+                                if(chartElement) {
                                         // Clear existing chart before creating new one
                                         if (chartInstances[currentMonthFeeCollectionChartId]) {
                                                 console.log('Destroying existing chart instance');
@@ -300,6 +333,7 @@ $(document).ready(function() {
 
         // Initial load
         loadRegistrationData();
+        loadPayoutStatisticsData();
 
         // Load today attendance chart if the element exists (dashboard page)
         loadTodayAttendanceData();
@@ -568,11 +602,19 @@ $(document).ready(function() {
         });
 
         // New member registration
-        $('.register_member').click(function(e) {
+        $(document).on('click', '.register_member', function(e) {
                 e.preventDefault();
                 $('.loadercontent').html('Registering member, please wait...');
                 $("#loader").show();
                 const form = $(this).closest('form');
+                let [form_valid, validation_message] = validate_member_reg_form(form);
+                if (!form_valid) {
+                        $('.loadercontent').html('');
+                        $("#loader").hide();
+                        toastr.options.timeOut = 5000;
+                        toastr.error(validation_message || "Member registration failed");
+                        return;
+                }
                 $.ajax({
                         url: baseUrl + '/api/register_member',
                         method: 'POST',
@@ -655,7 +697,7 @@ $(document).ready(function() {
         });
 
         //Add new membership plan
-        $('.add_membership').click(function(e) {
+        $(document).on('click', '.add_membership', function(e) {
                 e.preventDefault();
                 $('.loadercontent').html('Adding new membership plan, please wait...');
                 $("#loader").show();
@@ -677,6 +719,86 @@ $(document).ready(function() {
                         error: function(xhr, status, err) {
                                 toastr.options.timeOut = 5000;
                                 toastr.error("Error adding membership plan");
+                        }
+                });
+        });
+
+        //Add staff salary
+        $(document).on('click', '.add_salary', function(e) {
+                e.preventDefault();
+                $('.loadercontent').html('Adding staff salary, please wait...');
+                $("#loader").show();
+                const form = $(this).closest('form');
+                $.ajax({
+                        url: baseUrl + '/api/add_staff_salary',
+                        method: 'POST',
+                        data: form.serialize(),
+                        success: function(response) {
+                                $('.loadercontent').html('');
+                                $("#loader").hide();
+                                if(response.status === 'success') {
+                                        toastr.options.timeOut = 3000;
+                                        toastr.success(response.message || "Staff salary added successfully");
+                                        form[0].reset();
+                                        setTimeout(() => {
+                                                location.reload();
+                                        }, 3000);
+                                } else {
+                                        toastr.options.timeOut = 5000;
+                                        toastr.error(response.message || "Error adding staff salary");
+                                }
+                        },
+                        error: function(xhr, status, err) {
+                                toastr.options.timeOut = 5000;
+                                toastr.error("Error adding staff salary");
+                        }
+                });
+        });
+
+        // Handle edit button click to populate edit modal
+        $(document).on('click', '[data-bs-target="#editStaffSalaryModal"]', function() {
+                const button = $(this);
+                const id = button.data('id');
+                const staff_name = button.data('staff_name');
+                const staff_type = button.data('staff_type');
+                const amount = button.data('amount');
+                
+                // Populate the edit modal form fields
+                const editModal = $('#editStaffSalaryModal');
+                editModal.find('input[name="staff_name"]').val(staff_name);
+                editModal.find('input[name="staff_type"]').val(staff_type);
+                editModal.find('input[name="salary"]').val(amount);
+                // Store the salary ID for the update request
+                editModal.find('input[name="salary_id"]').val(id);
+        });
+
+        $(document).on('click', '.edit_save', function(e) {
+                e.preventDefault();
+                $('.loadercontent').html('Saving staff salary, please wait...');
+                $("#loader").show();
+                const form = $(this).closest('form');
+                $.ajax({
+                        url: baseUrl + '/api/edit_staff_salary',
+                        method: 'POST',
+                        data: form.serialize(),
+                        success: function(response) {
+                                $('.loadercontent').html('');
+                                $("#loader").hide();
+                                if(response.status === 'success') {
+                                        toastr.options.timeOut = 3000;
+                                        toastr.success(response.message || "Staff salary updated successfully");
+                                        form[0].reset();
+                                        setTimeout(() => {
+                                                location.reload();
+                                        }, 3000);
+                                } else {
+                                        toastr.options.timeOut = 5000;
+                                        toastr.error(response.message || "Error updating staff salary");
+                                }
+                        },
+                        error: function(xhr, status, err) {
+                                toastr.options.timeOut = 5000;
+                                toastr.error("Error updating staff salary");
                         }
                 });
         });
@@ -934,6 +1056,14 @@ $(document).ready(function() {
                 $('.loadercontent').html('Adding health record, please wait...');
                 $("#loader").show();
                 const form = $(this).closest('form');
+                let [is_valid, validation_message] = validate_progress_record_entry_form(form);
+                if (!is_valid) {
+                        $('.loadercontent').html('');
+                        $("#loader").hide();
+                        toastr.options.timeOut = 5000;
+                        toastr.error(validation_message);
+                        return;
+                }
                 $.ajax({
                         url: baseUrl + '/api/add_health_record',
                         method: 'POST',
@@ -1560,12 +1690,16 @@ $(document).ready(function() {
                 $("#loader").show();
                 const membership_renewal_reminder = $('#membership_renewal_reminder').val();
                 const membership_transfer_limit = $('#membership_transfer_limit').val();
+                const attendance_opening_time = $('#attendance_opening_time').val();
+                const attendance_last_time = $('#attendance_last_time').val();
                 $.ajax({
                         url: baseUrl + '/api/save_config',
                         method: 'POST',
                         data: {
                                 membership_renewal_reminder: membership_renewal_reminder,
-                                membership_transfer_limit: membership_transfer_limit
+                                membership_transfer_limit: membership_transfer_limit,
+                                attendance_opening_time: attendance_opening_time,
+                                attendance_last_time: attendance_last_time
                         },
                         success: function(response) {
                                 $('.loadercontent').html('');
@@ -1657,6 +1791,7 @@ $(document).ready(function() {
                                                 total_members_attn[memberIndex].check_in_time = response.check_in_time; //new Date(response.check_in_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                                                 total_members_attn[memberIndex].shift = response.shift;
                                         }
+                                        loadTodayAttendanceData();
                                 } else if(response.status && response.status === 'failed') {
                                         toastr.options.timeOut = 5000;
                                         toastr.error(response.message || "Error saving attendance");
@@ -1901,11 +2036,19 @@ $(document).ready(function() {
         });
 
         //Trainer registration
-        $('.register_trainer').click(function(e) {
+        $(document).on('click', '.register_trainer', function(e) {
                 e.preventDefault();
                 $('.loadercontent').html('Registering trainer, please wait...');
                 $("#loader").show();
                 const form = $(this).closest('form');
+                let [is_valid, validation_message] = validate_trainer_reg_form(form);
+                if (!is_valid) {
+                        $('.loadercontent').html('');
+                        $("#loader").hide();
+                        toastr.options.timeOut = 5000;
+                        toastr.error(validation_message || "Trainer registration failed");
+                        return;
+                }
                 $.ajax({
                         url: baseUrl + '/api/register_trainer',
                         method: 'POST',
