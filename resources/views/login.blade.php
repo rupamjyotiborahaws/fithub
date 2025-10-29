@@ -13,8 +13,8 @@
         <!-- Styles / Scripts -->
         @vite(['resources/css/app.css'])
     </head>
-    <body>
-        <div class="container-fluid flex items-center justify-center min-h-screen bg-gray-100">
+    <body class="login-background" style="background-image: url('{{ asset('assets/images/gym.png') }}');">
+        <div class="container-fluid flex items-center justify-center min-h-screen">
             <div class="row flex bg-grey-200 p-8 rounded-lg shadow-lg w-full max-w-md">
                 <div class="col-md-12">
                     <h4 class="text-4xl font-bold mb-8 text-center">{{ $client_settings['name'] }}</h4>

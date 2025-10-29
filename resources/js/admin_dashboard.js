@@ -2280,4 +2280,74 @@ $(document).ready(function() {
                         }
                 });
         });
+
+        $(document).on('click', '.prev_month, .next_month', function(e) {
+                e.preventDefault();
+                const isPrev = $(this).hasClass('prev_month');
+                const calenderHeader = $('.calender_header label');
+                let currentMonthYear = calenderHeader.text().trim();
+                console.log('Current month year:', currentMonthYear);
+                let [monthName, year] = currentMonthYear.split(' ');
+                console.log('Parsed month and year:', monthName, year);
+                let monthIndex = all_months.indexOf(monthName);
+                console.log('Current month index:', monthIndex);
+                if(isPrev) {
+                        monthIndex--;
+                        if(monthIndex < 0) {
+                                monthIndex = 11;
+                                year = parseInt(year) - 1;
+                        }
+                } else {
+                        monthIndex++;
+                        if(monthIndex > 11) {
+                                monthIndex = 0;
+                                year = parseInt(year) + 1;
+                        }
+                }
+                const newMonthName = all_months[monthIndex];
+                calenderHeader.html(`${newMonthName} ${year}`);
+                // Fetch and update calendar data for new month
+                $.ajax({
+                        url: baseUrl + '/api/get_calendar_data',
+                        method: 'GET',
+                        data: {month: monthIndex + 1, year: year},
+                        success: function(response) {
+                                console.log('Calendar data response:', response);
+                                if(response && response.status === 'success' && response.data) {
+                                        let days = response.data;
+                                        console.log('Days data:', days);
+                                        const calenderContainer = $('.calender_container .row');
+                                        calenderContainer.empty();
+                                        let i = 2;
+                                        days.forEach(day => {
+                                                let bg_color = '';
+                                                if(day.day == 'Sun') {
+                                                        bg_color = '#ffddddff';
+                                                } else if(i % 2 == 0) {
+                                                        bg_color = '#eee4e4ff';
+                                                } else {
+                                                        bg_color = '#f8f5f5ff';
+                                                }
+                                                let dayCell = `<div class="${day.is_today ? 'day_cell_today' : 'day_cell'}" style="background-color: ${bg_color};">
+                                                                <div class="calender_date">${new Date(day.date).getDate()}</div>
+                                                                <div class="calender_day">${day.day}</div>
+                                                                <div class="calender_events">`;
+                                                                let events_array = [];
+                                                                dayCell += `<div class="calender_event">`;
+                                                                day.events.forEach(event => {
+                                                                        if(!events_array.includes(event.membership)) {
+                                                                                events_array.push(event.membership);
+                                                                                dayCell += event.membership + ' : ';
+                                                                        }
+                                                                        dayCell += `${event.start_time} `;
+                                                                });
+
+                                                dayCell += `</div></div>`;
+                                                calenderContainer.append(dayCell);
+                                                i++;
+                                        });
+                                }
+                        }
+                });
+        });
 });

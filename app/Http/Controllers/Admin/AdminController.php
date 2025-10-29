@@ -32,7 +32,28 @@ class AdminController extends Controller
     {
         $client_settings = $request->client_settings;
         $allMembers = User::where(['isAdmin' => 0])->select('id','name', 'phone_no')->get();
-        return view('admin.dashboard', compact('client_settings', 'allMembers'));
+        $day_events = [];
+        $time_schedules = MembershipTimeSchedule::join('memberships', 'membership_time_schedules.membership_id', '=', 'memberships.id')
+                            ->select('membership_time_schedules.start_time', 'memberships.type as membership_type')
+                            ->get();
+        foreach ($time_schedules as $key => $value) {
+            $day_events[$key]['membership'] = $value->membership_type;
+            $day_events[$key]['start_time'] = date('h:i A', strtotime($value->start_time));
+        }
+        $today = date('Y-m-d');
+        $days = [];
+        $current_start_date = date('Y-m-01', strtotime($today));
+        $current_end_date = date('Y-m-t', strtotime($today));
+        for($i=$current_start_date; $i<=$current_end_date; $i = date('Y-m-d', strtotime($i . ' +1 day'))) {
+            $days[] = [
+                'date' => Carbon::parse($i),
+                'is_current_month' => (date('m', strtotime($i)) == date('m', strtotime($today))),
+                'events' => $day_events,
+                'is_today' => ($i == $today),
+                'day' => date('D', strtotime($i)),
+            ];
+        }
+        return view('admin.dashboard', compact('client_settings', 'allMembers', 'days'));
     }
     public function memberRegistration(Request $request)
     {
@@ -1523,5 +1544,37 @@ class AdminController extends Controller
             'amounts' => [$total_amount, $paid_amount, $total_payouts]
         ];
         return response()->json(['data' => $data, 'status' => 'success'], 200);
+    }
+    
+    public function getCalendarData(Request $request) {
+        $inputs = $request->all();
+        $current_month = $inputs['month'];
+        $current_year = $inputs['year'];
+        //dd($current_month, $current_year);
+        $current_start_date = Carbon::create($current_year, $current_month, 1)->toDateString();
+        $current_end_date = Carbon::create($current_year, $current_month, Carbon::create($current_year, $current_month, 1)->daysInMonth)->toDateString();
+        //dd($current_start_date, $current_end_date);
+
+        $day_events = [];
+        $time_schedules = MembershipTimeSchedule::join('memberships', 'membership_time_schedules.membership_id', '=', 'memberships.id')
+                            ->select('membership_time_schedules.start_time', 'memberships.type as membership_type')
+                            ->get();
+        foreach ($time_schedules as $key => $value) {
+            $day_events[$key]['membership'] = $value->membership_type;
+            $day_events[$key]['start_time'] = date('h:i A', strtotime($value->start_time));
+        }
+        $n_p_days = [];
+        for($i=$current_start_date; $i<=$current_end_date; $i = date('Y-m-d', strtotime($i . ' +1 day'))) {
+            \Log::info('Processing date: ' . $i);
+            $n_p_days[] = [
+                'date' => Carbon::parse($i),
+                'is_current_month' => '',
+                'events' => $day_events,
+                'is_today' => ($i == date('Y-m-d')) ? true : false,
+                'day' => date('D', strtotime($i)),
+            ];
+        }
+        \Log::info('Days array: ' . print_r($n_p_days, true));
+        return response()->json(['data' => $n_p_days, 'status' => 'success'], 200);
     }
 }

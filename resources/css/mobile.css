@@ -148,4 +148,70 @@
         font-weight: 500;
         font-size: 16px;
     }
+    .calender_card {
+        background:#fff; border:1px solid #ddd; border-radius:8px; padding:6px; height:auto; overflow:auto;
+    }
+    .calender_header {
+        text-align: center; margin-top: 5px;
+    }
+    .calender_container {
+        overflow: auto;
+    }
+    .calender_row {
+        margin-left:2px; margin-right:2px;
+    }
+    .day_cell {
+        border: 1px solid #ddd; padding: 10px; height: 120px; width:300px; border-radius: 8px; margin-top: 5px; margin-left: 5px;
+    }
+    .day_cell:hover {
+        background-color: #f1f1f1;
+    }
+    .day_cell_today {
+        border: 2px solid #007bff; padding: 10px; height: 120px; width:300px; border-radius: 8px; margin-top: 5px; margin-left: 5px;
+    }
+    .day_cell_today:hover {
+        background-color: #f1f1f1;
+    }
+    .calender_date {
+        float: right; font-weight: bold; font-size: 12px;  
+    }
+    .calender_day {
+        float: left; font-weight: bold; font-size: 12px;
+    }
+    .calender_event {
+        font-size: 12px;
+    }
+    .calender_event:first-child {
+        margin-top: 20px;
+    }
 }
+
+/* @media (max-width: 343px) {
+    .calender_card {
+        height: 500px; overflow:auto;
+    }
+    .calender_row {
+        margin-left:2px; margin-right:2px;
+    }
+    .day_cell {
+        border: 1px solid #ddd; padding: 7px; height: 120px; width:350px; border-radius: 8px; margin-left: 20px; margin-top: 5px;
+    }
+    .day_cell_today {
+        border: 2px solid #007bff; padding: 7px; height: 120px; width:350px; border-radius: 8px; margin-left: 20px; margin-top: 5px;
+    }   
+}
+
+@media (min-width: 344px) and (max-width: 478px) {
+    .calender_card {
+        height: 550px; overflow:auto; position: relative;
+    }
+    .calender_row {
+        margin-left:2px; margin-right:2px; position: relative;
+    }
+    .day_cell {
+        border: 1px solid #ddd; padding: 7px; height: 120px; width:185px; border-radius: 8px; margin-left: 5px; margin-top: 5px; position: relative;
+    }
+    .day_cell_today {
+        border: 2px solid #007bff; padding: 7px; height: 120px; width:185px; border-radius: 8px; margin-left: 5px; margin-top: 5px; position: relative;
+    }    
+} */

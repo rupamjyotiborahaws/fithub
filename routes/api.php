@@ -45,3 +45,4 @@ Route::post('renew_membership', [AdminController::class, 'renewMembership']);
 Route::post('add_staff_salary', [AdminController::class, 'addSalary']);
 Route::post('edit_staff_salary', [AdminController::class, 'editSalary']);
 Route::get('payout_statistics', [AdminController::class, 'payoutStatistics']);
+Route::get('get_calendar_data', [AdminController::class, 'getCalendarData']);
